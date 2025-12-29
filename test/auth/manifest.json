@@ -1,0 +1,42 @@
+{
+  "manifest_version": "0.3",
+  "name": "auth",
+  "version": "0.1.0",
+  "description": "An MCP server with OAuth 2.0 authorization",
+  "author": {
+    "name": "Stephen Akinyemi",
+    "email": "appcypher@outlook.com"
+  },
+  "server": {
+    "type": "binary",
+    "transport": "http",
+    "entry_point": "target/release/auth",
+    "mcp_config": {
+      "command": "${__dirname}/target/release/auth",
+      "args": [
+        "--port=${system_config.port}"
+      ],
+      "url": "http://127.0.0.1:${system_config.port}/mcp"
+    }
+  },
+  "system_config": {
+    "port": {
+      "type": "port",
+      "title": "Server Port",
+      "description": "Port the HTTP server listens on",
+      "required": true
+    }
+  },
+  "compatibility": {
+    "platforms": [
+      "darwin"
+    ]
+  },
+  "_meta": {
+    "company.superrad.radical": {
+      "scripts": {
+        "build": "cargo build --release"
+      }
+    }
+  }
+}
