@@ -17,12 +17,5 @@
     "platforms": [
       "darwin"
     ]
-  },
-  "_meta": {
-    "company.superrad.radical": {
-      "scripts": {
-        "build": "cargo build --release"
-      }
-    }
   }
 }
