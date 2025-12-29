@@ -1,6 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use rmcp::{
+    ErrorData as McpError,
     handler::server::tool::ToolRouter,
     handler::server::wrapper::Parameters,
     model::{Implementation, ProtocolVersion, ServerCapabilities, ServerInfo},
@@ -8,6 +9,7 @@ use rmcp::{
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 //--------------------------------------------------------------------------------------------------
 // Types: Error
@@ -26,6 +28,27 @@ pub enum TodolistError {
 
     #[error("Invalid status: {0}")]
     InvalidStatus(String),
+
+    #[error("Internal error: {0}")]
+    Internal(String),
+}
+
+impl TodolistError {
+    /// Get the error code for this error variant.
+    pub fn code(&self) -> &'static str {
+        match self {
+            TodolistError::EmptyContent => "EMPTY_CONTENT",
+            TodolistError::EmptyActiveForm => "EMPTY_ACTIVE_FORM",
+            TodolistError::MultipleInProgress => "MULTIPLE_IN_PROGRESS",
+            TodolistError::InvalidStatus(_) => "INVALID_STATUS",
+            TodolistError::Internal(_) => "INTERNAL_ERROR",
+        }
+    }
+
+    /// Convert to MCP error with structured data.
+    pub fn to_mcp_error(&self) -> McpError {
+        McpError::invalid_params(self.to_string(), Some(json!({ "code": self.code() })))
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -222,11 +245,10 @@ impl Server {
         name = "todolist__get",
         description = "Get the current state of the todo list."
     )]
-    async fn get(&self, _params: Parameters<GetInput>) -> Result<Json<GetOutput>, String> {
-        let state = self
-            .session_state
-            .read()
-            .map_err(|e| format!("Failed to read state: {}", e))?;
+    async fn get(&self, _params: Parameters<GetInput>) -> Result<Json<GetOutput>, McpError> {
+        let state = self.session_state.read().map_err(|e| {
+            TodolistError::Internal(format!("Failed to read state: {}", e)).to_mcp_error()
+        })?;
 
         let todos = state.get_todos().to_vec();
         let summary = TodoSummary::from_todos(&todos);
@@ -243,17 +265,16 @@ impl Server {
         name = "todolist__set",
         description = "Replace the entire todo list. Server validates constraints."
     )]
-    async fn set(&self, params: Parameters<SetInput>) -> Result<Json<SetOutput>, String> {
+    async fn set(&self, params: Parameters<SetInput>) -> Result<Json<SetOutput>, McpError> {
         let input: SetInput = params.0;
 
         // Validate the todos
-        validate_todos(&input.todos).map_err(|e| e.to_string())?;
+        validate_todos(&input.todos).map_err(|e| e.to_mcp_error())?;
 
         // Update the state
-        let mut state = self
-            .session_state
-            .write()
-            .map_err(|e| format!("Failed to write state: {}", e))?;
+        let mut state = self.session_state.write().map_err(|e| {
+            TodolistError::Internal(format!("Failed to write state: {}", e)).to_mcp_error()
+        })?;
 
         state.set_todos(input.todos.clone());
 
@@ -456,5 +477,34 @@ mod tests {
         assert_eq!(item.content, "Fix bug");
         assert_eq!(item.status, TodoStatus::InProgress);
         assert_eq!(item.active_form, "Fixing bug");
+    }
+
+    #[test]
+    fn test_error_codes() {
+        assert_eq!(TodolistError::EmptyContent.code(), "EMPTY_CONTENT");
+        assert_eq!(TodolistError::EmptyActiveForm.code(), "EMPTY_ACTIVE_FORM");
+        assert_eq!(
+            TodolistError::MultipleInProgress.code(),
+            "MULTIPLE_IN_PROGRESS"
+        );
+        assert_eq!(
+            TodolistError::InvalidStatus("x".to_string()).code(),
+            "INVALID_STATUS"
+        );
+        assert_eq!(
+            TodolistError::Internal("x".to_string()).code(),
+            "INTERNAL_ERROR"
+        );
+    }
+
+    #[test]
+    fn test_mcp_error_conversion() {
+        let err = TodolistError::EmptyContent;
+        let mcp_err = err.to_mcp_error();
+        assert_eq!(mcp_err.message, err.to_string());
+        assert_eq!(
+            mcp_err.data.as_ref().unwrap()["code"].as_str().unwrap(),
+            "EMPTY_CONTENT"
+        );
     }
 }
