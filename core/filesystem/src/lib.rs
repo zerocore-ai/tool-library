@@ -1,6 +1,8 @@
+use std::collections::HashSet;
 use std::fs;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, RwLock};
 
 use glob::glob as glob_match;
 use grep_regex::RegexMatcher;
@@ -15,6 +17,22 @@ use rmcp::{
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+
+//--------------------------------------------------------------------------------------------------
+// Constants
+//--------------------------------------------------------------------------------------------------
+
+/// Default maximum number of lines to read from a file.
+const DEFAULT_LINE_LIMIT: usize = 2000;
+
+/// Maximum characters per line before truncation.
+const MAX_LINE_LENGTH: usize = 2000;
+
+/// Maximum file size in bytes (10 MB).
+const MAX_FILE_SIZE: usize = 10 * 1024 * 1024;
+
+/// Maximum file size for write operations in bytes (10 MB).
+const MAX_WRITE_SIZE: usize = 10 * 1024 * 1024;
 
 //--------------------------------------------------------------------------------------------------
 // Types: Error
@@ -51,6 +69,27 @@ pub enum FilesystemError {
 
     #[error("old_string and new_string must be different")]
     SameStrings,
+
+    #[error("File must be read before writing: {0}. Use the read tool first.")]
+    NotReadBeforeWrite(String),
+
+    #[error("Path escapes allowed directory: {0}")]
+    PathEscapesSandbox(String),
+
+    #[error("Path is outside allowed directories. Allowed: {0:?}")]
+    PathNotAllowed(Vec<String>),
+
+    #[error("File too large: {size} bytes exceeds maximum of {max} bytes")]
+    FileTooLarge { size: usize, max: usize },
+
+    #[error("Content too large: {size} bytes exceeds maximum of {max} bytes")]
+    ContentTooLarge { size: usize, max: usize },
+
+    #[error("File appears to be binary: {0}")]
+    BinaryFile(String),
+
+    #[error("Path canonicalization failed: {0}")]
+    CanonicalizationFailed(String),
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -104,9 +143,6 @@ pub struct WriteInput {
 
 #[derive(Clone, Serialize, Deserialize, JsonSchema)]
 pub struct WriteOutput {
-    /// The path of the written file.
-    pub path: String,
-
     /// Number of bytes written.
     pub bytes_written: usize,
 }
@@ -133,9 +169,6 @@ pub struct EditInput {
 
 #[derive(Clone, Serialize, Deserialize, JsonSchema)]
 pub struct EditOutput {
-    /// The path of the edited file.
-    pub path: String,
-
     /// Number of replacements made.
     pub replacements: usize,
 }
@@ -158,9 +191,6 @@ pub struct GlobInput {
 pub struct GlobOutput {
     /// List of matching file paths.
     pub files: Vec<String>,
-
-    /// Total number of matches.
-    pub count: usize,
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -252,12 +282,85 @@ pub struct GrepOutput {
 }
 
 //--------------------------------------------------------------------------------------------------
+// Types: Session State
+//--------------------------------------------------------------------------------------------------
+
+/// Tracks files that have been read in the current session.
+/// Used to enforce read-before-write constraints.
+#[derive(Debug, Default)]
+pub struct SessionState {
+    /// Set of canonicalized file paths that have been read.
+    files_read: HashSet<PathBuf>,
+}
+
+impl SessionState {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Record that a file has been read.
+    pub fn record_read(&mut self, path: &Path) {
+        self.files_read.insert(path.to_path_buf());
+    }
+
+    /// Check if a file has been read in this session.
+    pub fn has_read(&self, path: &Path) -> bool {
+        self.files_read.contains(path)
+    }
+
+    /// Clear all session state.
+    pub fn clear(&mut self) {
+        self.files_read.clear();
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Types: Server Configuration
+//--------------------------------------------------------------------------------------------------
+
+/// Configuration options for the filesystem server.
+#[derive(Debug, Clone)]
+pub struct ServerConfig {
+    /// If set, only allow access to files within these directories.
+    /// Paths are canonicalized for comparison.
+    pub allowed_directories: Option<Vec<PathBuf>>,
+
+    /// Whether to enforce read-before-write constraints.
+    /// Defaults to true.
+    pub require_read_before_write: bool,
+
+    /// Maximum file size in bytes for read operations.
+    pub max_read_size: usize,
+
+    /// Maximum content size in bytes for write operations.
+    pub max_write_size: usize,
+
+    /// Whether to reject binary files.
+    /// Defaults to true.
+    pub reject_binary_files: bool,
+}
+
+impl Default for ServerConfig {
+    fn default() -> Self {
+        Self {
+            allowed_directories: None,
+            require_read_before_write: true,
+            max_read_size: MAX_FILE_SIZE,
+            max_write_size: MAX_WRITE_SIZE,
+            reject_binary_files: true,
+        }
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
 // Types: Server
 //--------------------------------------------------------------------------------------------------
 
 #[derive(Clone)]
 pub struct Server {
     tool_router: ToolRouter<Self>,
+    session_state: Arc<RwLock<SessionState>>,
+    config: ServerConfig,
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -266,9 +369,53 @@ pub struct Server {
 
 impl Server {
     pub fn new() -> Self {
+        Self::with_config(ServerConfig::default())
+    }
+
+    pub fn with_config(config: ServerConfig) -> Self {
         Self {
             tool_router: Self::tool_router(),
+            session_state: Arc::new(RwLock::new(SessionState::new())),
+            config,
         }
+    }
+
+    /// Record that a file has been read.
+    fn record_read(&self, path: &Path) {
+        if let Ok(mut state) = self.session_state.write() {
+            state.record_read(path);
+        }
+    }
+
+    /// Check if a file has been read in this session.
+    fn has_read(&self, path: &Path) -> bool {
+        self.session_state
+            .read()
+            .map(|state| state.has_read(path))
+            .unwrap_or(false)
+    }
+
+    /// Validate that a path is allowed by the sandbox configuration.
+    fn validate_sandbox(&self, path: &Path) -> Result<(), FilesystemError> {
+        if let Some(ref allowed) = self.config.allowed_directories {
+            let is_allowed = allowed.iter().any(|allowed_dir| path.starts_with(allowed_dir));
+            if !is_allowed {
+                return Err(FilesystemError::PathNotAllowed(
+                    allowed.iter().map(|p| p.display().to_string()).collect(),
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    /// Validate read-before-write constraint if enabled.
+    fn validate_read_before_write(&self, path: &Path) -> Result<(), FilesystemError> {
+        if self.config.require_read_before_write && path.exists() && !self.has_read(path) {
+            return Err(FilesystemError::NotReadBeforeWrite(
+                path.display().to_string(),
+            ));
+        }
+        Ok(())
     }
 }
 
@@ -282,12 +429,81 @@ impl Default for Server {
 // Functions: Helpers
 //--------------------------------------------------------------------------------------------------
 
+/// Validate that a path is absolute.
 fn validate_absolute_path(path: &str) -> Result<PathBuf, FilesystemError> {
     let path = PathBuf::from(path);
     if !path.is_absolute() {
         return Err(FilesystemError::RelativePath(path.display().to_string()));
     }
     Ok(path)
+}
+
+/// Canonicalize a path, normalizing `..` and symlinks.
+/// For existing files, uses fs::canonicalize.
+/// For non-existing files, canonicalizes the parent and appends the filename.
+fn canonicalize_path(path: &Path) -> Result<PathBuf, FilesystemError> {
+    if path.exists() {
+        path.canonicalize()
+            .map_err(|e| FilesystemError::CanonicalizationFailed(e.to_string()))
+    } else {
+        // For non-existing files, canonicalize parent and append filename
+        let parent = path.parent().ok_or_else(|| {
+            FilesystemError::CanonicalizationFailed("No parent directory".to_string())
+        })?;
+
+        let file_name = path.file_name().ok_or_else(|| {
+            FilesystemError::CanonicalizationFailed("No file name".to_string())
+        })?;
+
+        // If parent doesn't exist either, we can't canonicalize
+        if !parent.exists() {
+            // Return the normalized path as-is for new directories
+            return Ok(path.to_path_buf());
+        }
+
+        let canonical_parent = parent
+            .canonicalize()
+            .map_err(|e| FilesystemError::CanonicalizationFailed(e.to_string()))?;
+
+        Ok(canonical_parent.join(file_name))
+    }
+}
+
+/// Check if file content appears to be binary.
+/// Uses a simple heuristic: if there are null bytes in the first 8KB, it's binary.
+fn is_binary_content(content: &[u8]) -> bool {
+    let check_size = content.len().min(8192);
+    content[..check_size].contains(&0)
+}
+
+/// Check if a file appears to be binary.
+fn is_binary_file(path: &Path) -> Result<bool, FilesystemError> {
+    let file = fs::File::open(path)?;
+    let mut reader = BufReader::new(file);
+    let mut buffer = [0u8; 8192];
+
+    use std::io::Read;
+    let bytes_read = reader.read(&mut buffer)?;
+    Ok(is_binary_content(&buffer[..bytes_read]))
+}
+
+/// Validate file size against a maximum.
+fn validate_file_size(path: &Path, max_size: usize) -> Result<usize, FilesystemError> {
+    let metadata = fs::metadata(path)?;
+    let size = metadata.len() as usize;
+    if size > max_size {
+        return Err(FilesystemError::FileTooLarge { size, max: max_size });
+    }
+    Ok(size)
+}
+
+/// Validate content size against a maximum.
+fn validate_content_size(content: &str, max_size: usize) -> Result<(), FilesystemError> {
+    let size = content.len();
+    if size > max_size {
+        return Err(FilesystemError::ContentTooLarge { size, max: max_size });
+    }
+    Ok(())
 }
 
 fn read_file_lines(
@@ -315,9 +531,9 @@ fn read_file_lines(
         }
 
         let mut line_content = line?;
-        // Truncate lines longer than 2000 characters
-        if line_content.len() > 2000 {
-            line_content.truncate(2000);
+        // Truncate lines longer than MAX_LINE_LENGTH characters
+        if line_content.len() > MAX_LINE_LENGTH {
+            line_content.truncate(MAX_LINE_LENGTH);
             line_content.push_str("...");
         }
         lines.push(line_content);
@@ -465,22 +681,47 @@ impl Server {
     #[tool(name = "filesystem__read", description = "Read a file from the local filesystem. Returns content with line numbers.")]
     async fn read(&self, params: Parameters<ReadInput>) -> Result<Json<ReadOutput>, String> {
         let input: ReadInput = params.0;
-        let path = validate_absolute_path(&input.file_path)
+
+        // Validate absolute path
+        let path = validate_absolute_path(&input.file_path).map_err(|e| e.to_string())?;
+
+        // Canonicalize to prevent path traversal attacks
+        let canonical_path = canonicalize_path(&path).map_err(|e| e.to_string())?;
+
+        // Validate sandbox constraints
+        self.validate_sandbox(&canonical_path)
             .map_err(|e| e.to_string())?;
 
-        if path.is_dir() {
-            return Err(FilesystemError::IsDirectory(path.display().to_string()).to_string());
+        if canonical_path.is_dir() {
+            return Err(
+                FilesystemError::IsDirectory(canonical_path.display().to_string()).to_string(),
+            );
         }
 
-        if !path.exists() {
-            return Err(FilesystemError::NotFound(path.display().to_string()).to_string());
+        if !canonical_path.exists() {
+            return Err(
+                FilesystemError::NotFound(canonical_path.display().to_string()).to_string(),
+            );
+        }
+
+        // Validate file size
+        validate_file_size(&canonical_path, self.config.max_read_size)
+            .map_err(|e| e.to_string())?;
+
+        // Check for binary files
+        if self.config.reject_binary_files {
+            if is_binary_file(&canonical_path).map_err(|e| e.to_string())? {
+                return Err(
+                    FilesystemError::BinaryFile(canonical_path.display().to_string()).to_string(),
+                );
+            }
         }
 
         let offset = input.offset.unwrap_or(1).max(1);
-        let limit = input.limit.unwrap_or(2000);
+        let limit = input.limit.unwrap_or(DEFAULT_LINE_LIMIT);
 
         let (lines, total_lines, truncated) =
-            read_file_lines(&path, offset, limit).map_err(|e| e.to_string())?;
+            read_file_lines(&canonical_path, offset, limit).map_err(|e| e.to_string())?;
 
         let end_line = if lines.is_empty() {
             offset
@@ -489,6 +730,9 @@ impl Server {
         };
 
         let content = format_with_line_numbers(&lines, offset);
+
+        // Record this file as read for read-before-write validation
+        self.record_read(&canonical_path);
 
         Ok(Json(ReadOutput {
             content,
@@ -502,54 +746,90 @@ impl Server {
     /// Writes content to a file on the local filesystem.
     ///
     /// Overwrites the entire file content. Creates the file if it doesn't exist.
-    #[tool(name = "filesystem__write", description = "Write content to a file. Overwrites existing content.")]
+    /// Requires reading existing files first before overwriting.
+    #[tool(name = "filesystem__write", description = "Write content to a file. Overwrites existing content. Existing files must be read first.")]
     async fn write(&self, params: Parameters<WriteInput>) -> Result<Json<WriteOutput>, String> {
         let input: WriteInput = params.0;
-        let path = validate_absolute_path(&input.file_path)
+
+        // Validate absolute path
+        let path = validate_absolute_path(&input.file_path).map_err(|e| e.to_string())?;
+
+        // Canonicalize to prevent path traversal attacks
+        let canonical_path = canonicalize_path(&path).map_err(|e| e.to_string())?;
+
+        // Validate sandbox constraints
+        self.validate_sandbox(&canonical_path)
             .map_err(|e| e.to_string())?;
 
-        if path.is_dir() {
-            return Err(FilesystemError::IsDirectory(path.display().to_string()).to_string());
+        if canonical_path.is_dir() {
+            return Err(
+                FilesystemError::IsDirectory(canonical_path.display().to_string()).to_string(),
+            );
         }
 
+        // Validate content size
+        validate_content_size(&input.content, self.config.max_write_size)
+            .map_err(|e| e.to_string())?;
+
+        // Validate read-before-write for existing files
+        self.validate_read_before_write(&canonical_path)
+            .map_err(|e| e.to_string())?;
+
         // Create parent directories if they don't exist
-        if let Some(parent) = path.parent() {
+        if let Some(parent) = canonical_path.parent() {
             fs::create_dir_all(parent)
                 .map_err(|e| format!("Failed to create parent directories: {}", e))?;
         }
 
         let bytes_written = input.content.len();
-        fs::write(&path, &input.content).map_err(|e| e.to_string())?;
+        fs::write(&canonical_path, &input.content).map_err(|e| e.to_string())?;
 
-        Ok(Json(WriteOutput {
-            path: path.display().to_string(),
-            bytes_written,
-        }))
+        // Record as read since we now know its contents
+        self.record_read(&canonical_path);
+
+        Ok(Json(WriteOutput { bytes_written }))
     }
 
     /// Performs exact string replacement in a file.
     ///
     /// Finds old_string and replaces it with new_string. By default, fails if
     /// old_string is not unique unless replace_all is true.
-    #[tool(name = "filesystem__edit", description = "Edit a file by replacing exact string matches.")]
+    /// Requires reading the file first before editing.
+    #[tool(name = "filesystem__edit", description = "Edit a file by replacing exact string matches. File must be read first.")]
     async fn edit(&self, params: Parameters<EditInput>) -> Result<Json<EditOutput>, String> {
         let input: EditInput = params.0;
-        let path = validate_absolute_path(&input.file_path)
+
+        // Validate absolute path
+        let path = validate_absolute_path(&input.file_path).map_err(|e| e.to_string())?;
+
+        // Canonicalize to prevent path traversal attacks
+        let canonical_path = canonicalize_path(&path).map_err(|e| e.to_string())?;
+
+        // Validate sandbox constraints
+        self.validate_sandbox(&canonical_path)
             .map_err(|e| e.to_string())?;
 
-        if !path.exists() {
-            return Err(FilesystemError::NotFound(path.display().to_string()).to_string());
+        if !canonical_path.exists() {
+            return Err(
+                FilesystemError::NotFound(canonical_path.display().to_string()).to_string(),
+            );
         }
 
-        if path.is_dir() {
-            return Err(FilesystemError::IsDirectory(path.display().to_string()).to_string());
+        if canonical_path.is_dir() {
+            return Err(
+                FilesystemError::IsDirectory(canonical_path.display().to_string()).to_string(),
+            );
         }
+
+        // Validate read-before-write constraint
+        self.validate_read_before_write(&canonical_path)
+            .map_err(|e| e.to_string())?;
 
         if input.old_string == input.new_string {
             return Err(FilesystemError::SameStrings.to_string());
         }
 
-        let content = fs::read_to_string(&path).map_err(|e| e.to_string())?;
+        let content = fs::read_to_string(&canonical_path).map_err(|e| e.to_string())?;
 
         let occurrences = content.matches(&input.old_string).count();
         let replace_all = input.replace_all.unwrap_or(false);
@@ -568,10 +848,13 @@ impl Server {
             content.replacen(&input.old_string, &input.new_string, 1)
         };
 
-        fs::write(&path, &new_content).map_err(|e| e.to_string())?;
+        // Validate new content size
+        validate_content_size(&new_content, self.config.max_write_size)
+            .map_err(|e| e.to_string())?;
+
+        fs::write(&canonical_path, &new_content).map_err(|e| e.to_string())?;
 
         Ok(Json(EditOutput {
-            path: path.display().to_string(),
             replacements: if replace_all { occurrences } else { 1 },
         }))
     }
@@ -582,12 +865,18 @@ impl Server {
     #[tool(name = "filesystem__glob", description = "Find files matching a glob pattern.")]
     async fn glob(&self, params: Parameters<GlobInput>) -> Result<Json<GlobOutput>, String> {
         let input: GlobInput = params.0;
+
         let base_path = if let Some(ref p) = input.path {
-            validate_absolute_path(p).map_err(|e| e.to_string())?
+            let path = validate_absolute_path(p).map_err(|e| e.to_string())?;
+            canonicalize_path(&path).map_err(|e| e.to_string())?
         } else {
             std::env::current_dir()
                 .map_err(|e| format!("Failed to get current directory: {}", e))?
         };
+
+        // Validate sandbox constraints for base path
+        self.validate_sandbox(&base_path)
+            .map_err(|e| e.to_string())?;
 
         let full_pattern = base_path.join(&input.pattern);
         let pattern_str = full_pattern.to_string_lossy();
@@ -598,7 +887,12 @@ impl Server {
             match entry {
                 Ok(path) => {
                     if path.is_file() {
-                        files.push(path.display().to_string());
+                        // Canonicalize and validate each matched file
+                        if let Ok(canonical) = canonicalize_path(&path) {
+                            if self.validate_sandbox(&canonical).is_ok() {
+                                files.push(canonical.display().to_string());
+                            }
+                        }
                     }
                 }
                 Err(e) => {
@@ -618,8 +912,7 @@ impl Server {
             time_b.cmp(&time_a)
         });
 
-        let count = files.len();
-        Ok(Json(GlobOutput { files, count }))
+        Ok(Json(GlobOutput { files }))
     }
 
     /// Searches file contents using regex patterns.
@@ -628,12 +921,18 @@ impl Server {
     #[tool(name = "filesystem__grep", description = "Search file contents using regex patterns.")]
     async fn grep(&self, params: Parameters<GrepInput>) -> Result<Json<GrepOutput>, String> {
         let input: GrepInput = params.0;
+
         let base_path = if let Some(ref p) = input.path {
-            validate_absolute_path(p).map_err(|e| e.to_string())?
+            let path = validate_absolute_path(p).map_err(|e| e.to_string())?;
+            canonicalize_path(&path).map_err(|e| e.to_string())?
         } else {
             std::env::current_dir()
                 .map_err(|e| format!("Failed to get current directory: {}", e))?
         };
+
+        // Validate sandbox constraints for base path
+        self.validate_sandbox(&base_path)
+            .map_err(|e| e.to_string())?;
 
         let output_mode = input.output_mode.as_deref().unwrap_or("files_with_matches");
         let case_insensitive = input.case_insensitive.unwrap_or(false);
@@ -1044,5 +1343,242 @@ mod tests {
         assert_eq!(get_file_extension_for_type("rs"), Some(vec!["rs"]));
         assert_eq!(get_file_extension_for_type("py"), Some(vec!["py", "pyi"]));
         assert_eq!(get_file_extension_for_type("unknown"), None);
+    }
+
+    // ==================== New constraint tests ====================
+
+    // Session state tests
+    #[test]
+    fn test_session_state_record_and_check() {
+        let mut state = SessionState::new();
+        let path = PathBuf::from("/test/file.txt");
+
+        assert!(!state.has_read(&path));
+        state.record_read(&path);
+        assert!(state.has_read(&path));
+    }
+
+    #[test]
+    fn test_session_state_clear() {
+        let mut state = SessionState::new();
+        let path = PathBuf::from("/test/file.txt");
+
+        state.record_read(&path);
+        assert!(state.has_read(&path));
+
+        state.clear();
+        assert!(!state.has_read(&path));
+    }
+
+    // Path canonicalization tests
+    #[test]
+    fn test_canonicalize_existing_file() {
+        let dir = TempDir::new().unwrap();
+        let path = create_temp_file(&dir, "test.txt", "content");
+
+        let result = canonicalize_path(std::path::Path::new(&path));
+        assert!(result.is_ok());
+        assert!(result.unwrap().is_absolute());
+    }
+
+    #[test]
+    fn test_canonicalize_new_file_in_existing_dir() {
+        let dir = TempDir::new().unwrap();
+        let new_file_path = dir.path().join("new_file.txt");
+
+        let result = canonicalize_path(&new_file_path);
+        assert!(result.is_ok());
+    }
+
+    // Binary detection tests
+    #[test]
+    fn test_binary_content_detection() {
+        let text_content = b"Hello, this is plain text content";
+        assert!(!is_binary_content(text_content));
+
+        let binary_content = b"Hello\x00World"; // Contains null byte
+        assert!(is_binary_content(binary_content));
+    }
+
+    #[test]
+    fn test_binary_file_detection() {
+        let dir = TempDir::new().unwrap();
+
+        // Create a text file
+        let text_path = dir.path().join("text.txt");
+        fs::write(&text_path, "Hello, world!").unwrap();
+        assert!(!is_binary_file(&text_path).unwrap());
+
+        // Create a binary file
+        let binary_path = dir.path().join("binary.bin");
+        fs::write(&binary_path, b"Hello\x00World").unwrap();
+        assert!(is_binary_file(&binary_path).unwrap());
+    }
+
+    // File size validation tests
+    #[test]
+    fn test_validate_file_size_within_limit() {
+        let dir = TempDir::new().unwrap();
+        let path = create_temp_file(&dir, "test.txt", "small content");
+
+        let result = validate_file_size(std::path::Path::new(&path), 1024);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_validate_file_size_exceeds_limit() {
+        let dir = TempDir::new().unwrap();
+        let content = "x".repeat(100);
+        let path = create_temp_file(&dir, "test.txt", &content);
+
+        let result = validate_file_size(std::path::Path::new(&path), 50);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("too large"));
+    }
+
+    // Content size validation tests
+    #[test]
+    fn test_validate_content_size_within_limit() {
+        let content = "small content";
+        let result = validate_content_size(content, 1024);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_validate_content_size_exceeds_limit() {
+        let content = "x".repeat(100);
+        let result = validate_content_size(&content, 50);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("too large"));
+    }
+
+    // Sandbox validation tests
+    #[test]
+    fn test_sandbox_allows_path_in_allowed_dir() {
+        let dir = TempDir::new().unwrap();
+        let config = ServerConfig {
+            allowed_directories: Some(vec![dir.path().to_path_buf()]),
+            ..Default::default()
+        };
+        let server = Server::with_config(config);
+
+        let file_path = dir.path().join("test.txt");
+        let result = server.validate_sandbox(&file_path);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_sandbox_rejects_path_outside_allowed_dir() {
+        let allowed_dir = TempDir::new().unwrap();
+        let other_dir = TempDir::new().unwrap();
+
+        let config = ServerConfig {
+            allowed_directories: Some(vec![allowed_dir.path().to_path_buf()]),
+            ..Default::default()
+        };
+        let server = Server::with_config(config);
+
+        let file_path = other_dir.path().join("test.txt");
+        let result = server.validate_sandbox(&file_path);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("outside allowed"));
+    }
+
+    #[test]
+    fn test_sandbox_disabled_allows_any_path() {
+        let config = ServerConfig {
+            allowed_directories: None,
+            ..Default::default()
+        };
+        let server = Server::with_config(config);
+
+        let result = server.validate_sandbox(std::path::Path::new("/any/path/file.txt"));
+        assert!(result.is_ok());
+    }
+
+    // Read-before-write validation tests
+    #[test]
+    fn test_read_before_write_allows_new_file() {
+        let dir = TempDir::new().unwrap();
+        let config = ServerConfig::default();
+        let server = Server::with_config(config);
+
+        let new_file_path = dir.path().join("new_file.txt");
+        let result = server.validate_read_before_write(&new_file_path);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_read_before_write_rejects_unread_existing_file() {
+        let dir = TempDir::new().unwrap();
+        let path = create_temp_file(&dir, "test.txt", "content");
+
+        let config = ServerConfig::default();
+        let server = Server::with_config(config);
+
+        let result = server.validate_read_before_write(std::path::Path::new(&path));
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("must be read before"));
+    }
+
+    #[test]
+    fn test_read_before_write_allows_after_read() {
+        let dir = TempDir::new().unwrap();
+        let path = create_temp_file(&dir, "test.txt", "content");
+        let path = std::path::Path::new(&path);
+
+        let config = ServerConfig::default();
+        let server = Server::with_config(config);
+
+        // Record the file as read
+        server.record_read(path);
+
+        let result = server.validate_read_before_write(path);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_read_before_write_disabled() {
+        let dir = TempDir::new().unwrap();
+        let path = create_temp_file(&dir, "test.txt", "content");
+
+        let config = ServerConfig {
+            require_read_before_write: false,
+            ..Default::default()
+        };
+        let server = Server::with_config(config);
+
+        let result = server.validate_read_before_write(std::path::Path::new(&path));
+        assert!(result.is_ok());
+    }
+
+    // Server configuration tests
+    #[test]
+    fn test_server_default_config() {
+        let config = ServerConfig::default();
+        assert!(config.allowed_directories.is_none());
+        assert!(config.require_read_before_write);
+        assert_eq!(config.max_read_size, MAX_FILE_SIZE);
+        assert_eq!(config.max_write_size, MAX_WRITE_SIZE);
+        assert!(config.reject_binary_files);
+    }
+
+    #[test]
+    fn test_server_with_custom_config() {
+        let dir = TempDir::new().unwrap();
+        let config = ServerConfig {
+            allowed_directories: Some(vec![dir.path().to_path_buf()]),
+            require_read_before_write: false,
+            max_read_size: 1024,
+            max_write_size: 512,
+            reject_binary_files: false,
+        };
+        let server = Server::with_config(config.clone());
+
+        assert!(server.config.allowed_directories.is_some());
+        assert!(!server.config.require_read_before_write);
+        assert_eq!(server.config.max_read_size, 1024);
+        assert_eq!(server.config.max_write_size, 512);
+        assert!(!server.config.reject_binary_files);
     }
 }
