@@ -10,6 +10,7 @@ use grep_searcher::sinks::UTF8;
 use grep_searcher::Searcher;
 use ignore::WalkBuilder;
 use rmcp::{
+    ErrorData as McpError,
     handler::server::tool::ToolRouter,
     handler::server::wrapper::Parameters,
     model::{Implementation, ProtocolVersion, ServerCapabilities, ServerInfo},
@@ -17,6 +18,7 @@ use rmcp::{
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 //--------------------------------------------------------------------------------------------------
 // Constants
@@ -90,6 +92,42 @@ pub enum FilesystemError {
 
     #[error("Path canonicalization failed: {0}")]
     CanonicalizationFailed(String),
+}
+
+impl FilesystemError {
+    /// Get the error code for this error variant.
+    pub fn code(&self) -> &'static str {
+        match self {
+            FilesystemError::RelativePath(_) => "RELATIVE_PATH",
+            FilesystemError::IsDirectory(_) => "IS_DIRECTORY",
+            FilesystemError::NotFound(_) => "NOT_FOUND",
+            FilesystemError::Io(_) => "IO_ERROR",
+            FilesystemError::Pattern(_) => "PATTERN_ERROR",
+            FilesystemError::Glob(_) => "GLOB_ERROR",
+            FilesystemError::Regex(_) => "REGEX_ERROR",
+            FilesystemError::OldStringNotFound => "OLD_STRING_NOT_FOUND",
+            FilesystemError::OldStringNotUnique(_) => "OLD_STRING_NOT_UNIQUE",
+            FilesystemError::SameStrings => "SAME_STRINGS",
+            FilesystemError::NotReadBeforeWrite(_) => "NOT_READ_BEFORE_WRITE",
+            FilesystemError::PathEscapesSandbox(_) => "PATH_ESCAPES_SANDBOX",
+            FilesystemError::PathNotAllowed(_) => "PATH_NOT_ALLOWED",
+            FilesystemError::FileTooLarge { .. } => "FILE_TOO_LARGE",
+            FilesystemError::ContentTooLarge { .. } => "CONTENT_TOO_LARGE",
+            FilesystemError::BinaryFile(_) => "BINARY_FILE",
+            FilesystemError::CanonicalizationFailed(_) => "CANONICALIZATION_FAILED",
+        }
+    }
+
+    /// Convert to MCP error with structured data.
+    pub fn to_mcp_error(&self) -> McpError {
+        McpError::invalid_params(self.to_string(), Some(json!({ "code": self.code() })))
+    }
+}
+
+/// Helper to convert errors to MCP error format.
+fn to_mcp_error<E: Into<FilesystemError>>(e: E) -> McpError {
+    let err: FilesystemError = e.into();
+    err.to_mcp_error()
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -679,40 +717,40 @@ impl Server {
     /// Returns file content with line numbers in cat -n format (1-indexed).
     /// Supports offset/limit for reading large files in chunks.
     #[tool(name = "filesystem__read", description = "Read a file from the local filesystem. Returns content with line numbers.")]
-    async fn read(&self, params: Parameters<ReadInput>) -> Result<Json<ReadOutput>, String> {
+    async fn read(&self, params: Parameters<ReadInput>) -> Result<Json<ReadOutput>, McpError> {
         let input: ReadInput = params.0;
 
         // Validate absolute path
-        let path = validate_absolute_path(&input.file_path).map_err(|e| e.to_string())?;
+        let path = validate_absolute_path(&input.file_path).map_err(to_mcp_error)?;
 
         // Canonicalize to prevent path traversal attacks
-        let canonical_path = canonicalize_path(&path).map_err(|e| e.to_string())?;
+        let canonical_path = canonicalize_path(&path).map_err(to_mcp_error)?;
 
         // Validate sandbox constraints
         self.validate_sandbox(&canonical_path)
-            .map_err(|e| e.to_string())?;
+            .map_err(to_mcp_error)?;
 
         if canonical_path.is_dir() {
             return Err(
-                FilesystemError::IsDirectory(canonical_path.display().to_string()).to_string(),
+                FilesystemError::IsDirectory(canonical_path.display().to_string()).to_mcp_error(),
             );
         }
 
         if !canonical_path.exists() {
             return Err(
-                FilesystemError::NotFound(canonical_path.display().to_string()).to_string(),
+                FilesystemError::NotFound(canonical_path.display().to_string()).to_mcp_error(),
             );
         }
 
         // Validate file size
         validate_file_size(&canonical_path, self.config.max_read_size)
-            .map_err(|e| e.to_string())?;
+            .map_err(to_mcp_error)?;
 
         // Check for binary files
         if self.config.reject_binary_files {
-            if is_binary_file(&canonical_path).map_err(|e| e.to_string())? {
+            if is_binary_file(&canonical_path).map_err(to_mcp_error)? {
                 return Err(
-                    FilesystemError::BinaryFile(canonical_path.display().to_string()).to_string(),
+                    FilesystemError::BinaryFile(canonical_path.display().to_string()).to_mcp_error(),
                 );
             }
         }
@@ -721,7 +759,7 @@ impl Server {
         let limit = input.limit.unwrap_or(DEFAULT_LINE_LIMIT);
 
         let (lines, total_lines, truncated) =
-            read_file_lines(&canonical_path, offset, limit).map_err(|e| e.to_string())?;
+            read_file_lines(&canonical_path, offset, limit).map_err(to_mcp_error)?;
 
         let end_line = if lines.is_empty() {
             offset
@@ -748,41 +786,41 @@ impl Server {
     /// Overwrites the entire file content. Creates the file if it doesn't exist.
     /// Requires reading existing files first before overwriting.
     #[tool(name = "filesystem__write", description = "Write content to a file. Overwrites existing content. Existing files must be read first.")]
-    async fn write(&self, params: Parameters<WriteInput>) -> Result<Json<WriteOutput>, String> {
+    async fn write(&self, params: Parameters<WriteInput>) -> Result<Json<WriteOutput>, McpError> {
         let input: WriteInput = params.0;
 
         // Validate absolute path
-        let path = validate_absolute_path(&input.file_path).map_err(|e| e.to_string())?;
+        let path = validate_absolute_path(&input.file_path).map_err(to_mcp_error)?;
 
         // Canonicalize to prevent path traversal attacks
-        let canonical_path = canonicalize_path(&path).map_err(|e| e.to_string())?;
+        let canonical_path = canonicalize_path(&path).map_err(to_mcp_error)?;
 
         // Validate sandbox constraints
         self.validate_sandbox(&canonical_path)
-            .map_err(|e| e.to_string())?;
+            .map_err(to_mcp_error)?;
 
         if canonical_path.is_dir() {
             return Err(
-                FilesystemError::IsDirectory(canonical_path.display().to_string()).to_string(),
+                FilesystemError::IsDirectory(canonical_path.display().to_string()).to_mcp_error(),
             );
         }
 
         // Validate content size
         validate_content_size(&input.content, self.config.max_write_size)
-            .map_err(|e| e.to_string())?;
+            .map_err(to_mcp_error)?;
 
         // Validate read-before-write for existing files
         self.validate_read_before_write(&canonical_path)
-            .map_err(|e| e.to_string())?;
+            .map_err(to_mcp_error)?;
 
         // Create parent directories if they don't exist
         if let Some(parent) = canonical_path.parent() {
             fs::create_dir_all(parent)
-                .map_err(|e| format!("Failed to create parent directories: {}", e))?;
+                .map_err(to_mcp_error)?;
         }
 
         let bytes_written = input.content.len();
-        fs::write(&canonical_path, &input.content).map_err(|e| e.to_string())?;
+        fs::write(&canonical_path, &input.content).map_err(to_mcp_error)?;
 
         // Record as read since we now know its contents
         self.record_read(&canonical_path);
@@ -796,50 +834,50 @@ impl Server {
     /// old_string is not unique unless replace_all is true.
     /// Requires reading the file first before editing.
     #[tool(name = "filesystem__edit", description = "Edit a file by replacing exact string matches. File must be read first.")]
-    async fn edit(&self, params: Parameters<EditInput>) -> Result<Json<EditOutput>, String> {
+    async fn edit(&self, params: Parameters<EditInput>) -> Result<Json<EditOutput>, McpError> {
         let input: EditInput = params.0;
 
         // Validate absolute path
-        let path = validate_absolute_path(&input.file_path).map_err(|e| e.to_string())?;
+        let path = validate_absolute_path(&input.file_path).map_err(to_mcp_error)?;
 
         // Canonicalize to prevent path traversal attacks
-        let canonical_path = canonicalize_path(&path).map_err(|e| e.to_string())?;
+        let canonical_path = canonicalize_path(&path).map_err(to_mcp_error)?;
 
         // Validate sandbox constraints
         self.validate_sandbox(&canonical_path)
-            .map_err(|e| e.to_string())?;
+            .map_err(to_mcp_error)?;
 
         if !canonical_path.exists() {
             return Err(
-                FilesystemError::NotFound(canonical_path.display().to_string()).to_string(),
+                FilesystemError::NotFound(canonical_path.display().to_string()).to_mcp_error(),
             );
         }
 
         if canonical_path.is_dir() {
             return Err(
-                FilesystemError::IsDirectory(canonical_path.display().to_string()).to_string(),
+                FilesystemError::IsDirectory(canonical_path.display().to_string()).to_mcp_error(),
             );
         }
 
         // Validate read-before-write constraint
         self.validate_read_before_write(&canonical_path)
-            .map_err(|e| e.to_string())?;
+            .map_err(to_mcp_error)?;
 
         if input.old_string == input.new_string {
-            return Err(FilesystemError::SameStrings.to_string());
+            return Err(FilesystemError::SameStrings.to_mcp_error());
         }
 
-        let content = fs::read_to_string(&canonical_path).map_err(|e| e.to_string())?;
+        let content = fs::read_to_string(&canonical_path).map_err(to_mcp_error)?;
 
         let occurrences = content.matches(&input.old_string).count();
         let replace_all = input.replace_all.unwrap_or(false);
 
         if occurrences == 0 {
-            return Err(FilesystemError::OldStringNotFound.to_string());
+            return Err(FilesystemError::OldStringNotFound.to_mcp_error());
         }
 
         if occurrences > 1 && !replace_all {
-            return Err(FilesystemError::OldStringNotUnique(occurrences).to_string());
+            return Err(FilesystemError::OldStringNotUnique(occurrences).to_mcp_error());
         }
 
         let new_content = if replace_all {
@@ -850,9 +888,9 @@ impl Server {
 
         // Validate new content size
         validate_content_size(&new_content, self.config.max_write_size)
-            .map_err(|e| e.to_string())?;
+            .map_err(to_mcp_error)?;
 
-        fs::write(&canonical_path, &new_content).map_err(|e| e.to_string())?;
+        fs::write(&canonical_path, &new_content).map_err(to_mcp_error)?;
 
         Ok(Json(EditOutput {
             replacements: if replace_all { occurrences } else { 1 },
@@ -863,27 +901,27 @@ impl Server {
     ///
     /// Supports standard glob patterns like *, **, ?, {a,b}, [abc].
     #[tool(name = "filesystem__glob", description = "Find files matching a glob pattern.")]
-    async fn glob(&self, params: Parameters<GlobInput>) -> Result<Json<GlobOutput>, String> {
+    async fn glob(&self, params: Parameters<GlobInput>) -> Result<Json<GlobOutput>, McpError> {
         let input: GlobInput = params.0;
 
         let base_path = if let Some(ref p) = input.path {
-            let path = validate_absolute_path(p).map_err(|e| e.to_string())?;
-            canonicalize_path(&path).map_err(|e| e.to_string())?
+            let path = validate_absolute_path(p).map_err(to_mcp_error)?;
+            canonicalize_path(&path).map_err(to_mcp_error)?
         } else {
             std::env::current_dir()
-                .map_err(|e| format!("Failed to get current directory: {}", e))?
+                .map_err(to_mcp_error)?
         };
 
         // Validate sandbox constraints for base path
         self.validate_sandbox(&base_path)
-            .map_err(|e| e.to_string())?;
+            .map_err(to_mcp_error)?;
 
         let full_pattern = base_path.join(&input.pattern);
         let pattern_str = full_pattern.to_string_lossy();
 
         let mut files: Vec<String> = Vec::new();
 
-        for entry in glob_match(&pattern_str).map_err(|e| e.to_string())? {
+        for entry in glob_match(&pattern_str).map_err(to_mcp_error)? {
             match entry {
                 Ok(path) => {
                     if path.is_file() {
@@ -896,7 +934,7 @@ impl Server {
                     }
                 }
                 Err(e) => {
-                    return Err(e.to_string());
+                    return Err(to_mcp_error(e));
                 }
             }
         }
@@ -919,20 +957,20 @@ impl Server {
     ///
     /// Supports ripgrep-style regex patterns with various output modes.
     #[tool(name = "filesystem__grep", description = "Search file contents using regex patterns.")]
-    async fn grep(&self, params: Parameters<GrepInput>) -> Result<Json<GrepOutput>, String> {
+    async fn grep(&self, params: Parameters<GrepInput>) -> Result<Json<GrepOutput>, McpError> {
         let input: GrepInput = params.0;
 
         let base_path = if let Some(ref p) = input.path {
-            let path = validate_absolute_path(p).map_err(|e| e.to_string())?;
-            canonicalize_path(&path).map_err(|e| e.to_string())?
+            let path = validate_absolute_path(p).map_err(to_mcp_error)?;
+            canonicalize_path(&path).map_err(to_mcp_error)?
         } else {
             std::env::current_dir()
-                .map_err(|e| format!("Failed to get current directory: {}", e))?
+                .map_err(to_mcp_error)?
         };
 
         // Validate sandbox constraints for base path
         self.validate_sandbox(&base_path)
-            .map_err(|e| e.to_string())?;
+            .map_err(to_mcp_error)?;
 
         let output_mode = input.output_mode.as_deref().unwrap_or("files_with_matches");
         let case_insensitive = input.case_insensitive.unwrap_or(false);
@@ -949,7 +987,7 @@ impl Server {
         };
 
         let matcher = RegexMatcher::new(&pattern)
-            .map_err(|e| FilesystemError::Regex(e.to_string()).to_string())?;
+            .map_err(|e| FilesystemError::Regex(e.to_string()).to_mcp_error())?;
 
         let mut matches: Vec<GrepMatch> = Vec::new();
         let mut total_count = 0usize;
@@ -965,7 +1003,7 @@ impl Server {
         if base_path.is_file() {
             let file_matches =
                 search_file(&base_path, &matcher, output_mode, show_line_numbers)
-                    .map_err(|e| e.to_string())?;
+                    .map_err(to_mcp_error)?;
 
             if !file_matches.is_empty() {
                 total_count += file_matches.len();
@@ -1012,7 +1050,7 @@ impl Server {
 
                 let file_matches =
                     search_file(path, &matcher, output_mode, show_line_numbers)
-                        .map_err(|e| e.to_string())?;
+                        .map_err(to_mcp_error)?;
 
                 if !file_matches.is_empty() {
                     total_count += file_matches.len();
