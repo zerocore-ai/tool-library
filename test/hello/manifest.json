@@ -1,0 +1,39 @@
+{
+  "manifest_version": "0.3",
+  "name": "hello",
+  "version": "0.1.0",
+  "description": "An MCP server",
+  "author": {
+    "name": "Stephen Akinyemi"
+  },
+  "server": {
+    "type": "binary",
+    "entry_point": "target/release/hello",
+    "mcp_config": {
+      "command": "${__dirname}/target/release/hello",
+      "env": {
+        "USERNAME": "${user_config.username}"
+      }
+    }
+  },
+  "user_config": {
+    "username": {
+      "type": "string",
+      "title": "Username",
+      "description": "Your name for personalized greetings",
+      "required": true
+    }
+  },
+  "compatibility": {
+    "platforms": [
+      "darwin"
+    ]
+  },
+  "_meta": {
+    "company.superrad.radical": {
+      "scripts": {
+        "build": "cargo build --release"
+      }
+    }
+  }
+}

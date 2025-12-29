@@ -1,0 +1,28 @@
+{
+  "manifest_version": "0.3",
+  "name": "filesystem",
+  "version": "0.1.0",
+  "description": "An MCP server",
+  "author": {
+    "name": "Stephen Akinyemi"
+  },
+  "server": {
+    "type": "binary",
+    "entry_point": "target/release/filesystem",
+    "mcp_config": {
+      "command": "${__dirname}/target/release/filesystem"
+    }
+  },
+  "compatibility": {
+    "platforms": [
+      "darwin"
+    ]
+  },
+  "_meta": {
+    "company.superrad.radical": {
+      "scripts": {
+        "build": "cargo build --release"
+      }
+    }
+  }
+}
