@@ -17,78 +17,15 @@
   "tools": [
     {
       "name": "system__sleep",
-      "description": "Pause execution for a specified duration in milliseconds",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "duration_ms": {
-            "type": "integer",
-            "description": "Duration to sleep in milliseconds (0 to 300000)"
-          }
-        },
-        "required": ["duration_ms"]
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "slept_ms": {
-            "type": "integer",
-            "description": "Actual duration slept in milliseconds"
-          }
-        },
-        "required": ["slept_ms"]
-      }
+      "description": "Pause execution for a specified duration in milliseconds"
     },
     {
       "name": "system__get_datetime",
-      "description": "Get the current UTC date and time",
-      "input_schema": {
-        "type": "object",
-        "properties": {},
-        "required": []
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "iso8601": {
-            "type": "string",
-            "description": "UTC timestamp in ISO 8601 format"
-          },
-          "unix_ms": {
-            "type": "integer",
-            "description": "Unix timestamp in milliseconds"
-          }
-        },
-        "required": ["iso8601", "unix_ms"]
-      }
+      "description": "Get the current UTC date and time"
     },
     {
       "name": "system__get_random_integer",
-      "description": "Generate a random integer within an inclusive range [min, max]",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "min": {
-            "type": "integer",
-            "description": "Minimum value (inclusive)"
-          },
-          "max": {
-            "type": "integer",
-            "description": "Maximum value (inclusive)"
-          }
-        },
-        "required": ["min", "max"]
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "integer",
-            "description": "Random integer in range [min, max]"
-          }
-        },
-        "required": ["value"]
-      }
+      "description": "Generate a random integer within an inclusive range [min, max]"
     }
   ],
   "compatibility": {
@@ -98,6 +35,87 @@
     "company.superrad.radical": {
       "scripts": {
         "build": "cargo build --release"
+      },
+      "static_responses": {
+        "tools/list": {
+          "tools": [
+            {
+              "name": "system__sleep",
+              "description": "Pause execution for a specified duration in milliseconds",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "duration_ms": {
+                    "type": "integer",
+                    "description": "Duration to sleep in milliseconds (0 to 300000)"
+                  }
+                },
+                "required": ["duration_ms"]
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "slept_ms": {
+                    "type": "integer",
+                    "description": "Actual duration slept in milliseconds"
+                  }
+                },
+                "required": ["slept_ms"]
+              }
+            },
+            {
+              "name": "system__get_datetime",
+              "description": "Get the current UTC date and time",
+              "input_schema": {
+                "type": "object",
+                "properties": {},
+                "required": []
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "iso8601": {
+                    "type": "string",
+                    "description": "UTC timestamp in ISO 8601 format"
+                  },
+                  "unix_ms": {
+                    "type": "integer",
+                    "description": "Unix timestamp in milliseconds"
+                  }
+                },
+                "required": ["iso8601", "unix_ms"]
+              }
+            },
+            {
+              "name": "system__get_random_integer",
+              "description": "Generate a random integer within an inclusive range [min, max]",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "type": "integer",
+                    "description": "Minimum value (inclusive)"
+                  },
+                  "max": {
+                    "type": "integer",
+                    "description": "Maximum value (inclusive)"
+                  }
+                },
+                "required": ["min", "max"]
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "integer",
+                    "description": "Random integer in range [min, max]"
+                  }
+                },
+                "required": ["value"]
+              }
+            }
+          ]
+        }
       }
     }
   }

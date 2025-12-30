@@ -22,106 +22,11 @@
   "tools": [
     {
       "name": "web__fetch",
-      "description": "Fetch content from a URL and convert it to markdown",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "description": "The URL to fetch (must be valid, HTTP auto-upgrades to HTTPS)"
-          },
-          "timeout_ms": {
-            "type": "integer",
-            "description": "Request timeout in milliseconds. Defaults to 30000 (30s)"
-          },
-          "max_length": {
-            "type": "integer",
-            "description": "Maximum content length in bytes. Defaults to 1MB"
-          }
-        },
-        "required": ["url"]
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "content": {
-            "type": "string",
-            "description": "The fetched content converted to markdown"
-          },
-          "final_url": {
-            "type": "string",
-            "description": "The final URL after redirects (if any)"
-          },
-          "status": {
-            "type": "integer",
-            "description": "HTTP status code"
-          },
-          "content_type": {
-            "type": "string",
-            "description": "Content MIME type (e.g., \"text/html\", \"application/json\")"
-          },
-          "truncated": {
-            "type": "boolean",
-            "description": "Whether the content was truncated due to max_length"
-          }
-        },
-        "required": ["content", "final_url", "status", "content_type", "truncated"]
-      }
+      "description": "Fetch content from a URL and convert it to markdown"
     },
     {
       "name": "web__search",
-      "description": "Search the web and return results with titles, URLs, and snippets",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "query": {
-            "type": "string",
-            "description": "Search query (minimum 2 characters)"
-          },
-          "max_results": {
-            "type": "integer",
-            "description": "Maximum number of results to return. Defaults to 10"
-          },
-          "allowed_domains": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Only include results from these domains"
-          },
-          "blocked_domains": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Exclude results from these domains"
-          }
-        },
-        "required": ["query"]
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "results": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "title": { "type": "string", "description": "Result title" },
-                "url": { "type": "string", "description": "Result URL" },
-                "snippet": { "type": "string", "description": "Result snippet/description" }
-              },
-              "required": ["title", "url", "snippet"]
-            },
-            "description": "List of search results"
-          },
-          "count": {
-            "type": "integer",
-            "description": "Number of results returned"
-          },
-          "provider": {
-            "type": "string",
-            "description": "The search provider used"
-          }
-        },
-        "required": ["results", "count", "provider"]
-      }
+      "description": "Search the web and return results with titles, URLs, and snippets"
     }
   ],
   "user_config": {
@@ -154,6 +59,115 @@
     "company.superrad.radical": {
       "scripts": {
         "build": "cargo build --release"
+      },
+      "static_responses": {
+        "tools/list": {
+          "tools": [
+            {
+              "name": "web__fetch",
+              "description": "Fetch content from a URL and convert it to markdown",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "The URL to fetch (must be valid, HTTP auto-upgrades to HTTPS)"
+                  },
+                  "timeout_ms": {
+                    "type": "integer",
+                    "description": "Request timeout in milliseconds. Defaults to 30000 (30s)"
+                  },
+                  "max_length": {
+                    "type": "integer",
+                    "description": "Maximum content length in bytes. Defaults to 1MB"
+                  }
+                },
+                "required": ["url"]
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "description": "The fetched content converted to markdown"
+                  },
+                  "final_url": {
+                    "type": "string",
+                    "description": "The final URL after redirects (if any)"
+                  },
+                  "status": {
+                    "type": "integer",
+                    "description": "HTTP status code"
+                  },
+                  "content_type": {
+                    "type": "string",
+                    "description": "Content MIME type (e.g., \"text/html\", \"application/json\")"
+                  },
+                  "truncated": {
+                    "type": "boolean",
+                    "description": "Whether the content was truncated due to max_length"
+                  }
+                },
+                "required": ["content", "final_url", "status", "content_type", "truncated"]
+              }
+            },
+            {
+              "name": "web__search",
+              "description": "Search the web and return results with titles, URLs, and snippets",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "Search query (minimum 2 characters)"
+                  },
+                  "max_results": {
+                    "type": "integer",
+                    "description": "Maximum number of results to return. Defaults to 10"
+                  },
+                  "allowed_domains": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Only include results from these domains"
+                  },
+                  "blocked_domains": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Exclude results from these domains"
+                  }
+                },
+                "required": ["query"]
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "results": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title": { "type": "string", "description": "Result title" },
+                        "url": { "type": "string", "description": "Result URL" },
+                        "snippet": { "type": "string", "description": "Result snippet/description" }
+                      },
+                      "required": ["title", "url", "snippet"]
+                    },
+                    "description": "List of search results"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "description": "Number of results returned"
+                  },
+                  "provider": {
+                    "type": "string",
+                    "description": "The search provider used"
+                  }
+                },
+                "required": ["results", "count", "provider"]
+              }
+            }
+          ]
+        }
       }
     }
   }
