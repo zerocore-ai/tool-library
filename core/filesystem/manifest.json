@@ -17,235 +17,23 @@
   "tools": [
     {
       "name": "filesystem__read",
-      "description": "Read a file from the local filesystem. Returns content with line numbers",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "file_path": {
-            "type": "string",
-            "description": "Absolute path to the file to read"
-          },
-          "offset": {
-            "type": "integer",
-            "description": "Starting line number (1-indexed). Defaults to 1"
-          },
-          "limit": {
-            "type": "integer",
-            "description": "Number of lines to read. Defaults to 2000"
-          }
-        },
-        "required": ["file_path"]
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "content": {
-            "type": "string",
-            "description": "The file content with line numbers in cat -n format"
-          },
-          "total_lines": {
-            "type": "integer",
-            "description": "Total number of lines in the file"
-          },
-          "start_line": {
-            "type": "integer",
-            "description": "Starting line number of the returned content"
-          },
-          "end_line": {
-            "type": "integer",
-            "description": "Ending line number of the returned content"
-          },
-          "truncated": {
-            "type": "boolean",
-            "description": "Whether the file was truncated"
-          }
-        },
-        "required": ["content", "total_lines", "start_line", "end_line", "truncated"]
-      }
+      "description": "Read a file from the local filesystem"
     },
     {
       "name": "filesystem__write",
-      "description": "Write content to a file. Overwrites existing content. Existing files must be read first",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "file_path": {
-            "type": "string",
-            "description": "Absolute path to the file to write"
-          },
-          "content": {
-            "type": "string",
-            "description": "Content to write to the file"
-          }
-        },
-        "required": ["file_path", "content"]
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "bytes_written": {
-            "type": "integer",
-            "description": "Number of bytes written"
-          }
-        },
-        "required": ["bytes_written"]
-      }
+      "description": "Write content to a file"
     },
     {
       "name": "filesystem__edit",
-      "description": "Edit a file by replacing exact string matches. File must be read first",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "file_path": {
-            "type": "string",
-            "description": "Absolute path to the file to edit"
-          },
-          "old_string": {
-            "type": "string",
-            "description": "The exact string to find and replace"
-          },
-          "new_string": {
-            "type": "string",
-            "description": "The replacement string"
-          },
-          "replace_all": {
-            "type": "boolean",
-            "description": "If true, replace all occurrences. Defaults to false"
-          }
-        },
-        "required": ["file_path", "old_string", "new_string"]
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "replacements": {
-            "type": "integer",
-            "description": "Number of replacements made"
-          }
-        },
-        "required": ["replacements"]
-      }
+      "description": "Edit a file by replacing exact string matches"
     },
     {
       "name": "filesystem__glob",
-      "description": "Find files matching a glob pattern",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "pattern": {
-            "type": "string",
-            "description": "Glob pattern to match files against (e.g., \"**/*.rs\", \"src/*.ts\")"
-          },
-          "path": {
-            "type": "string",
-            "description": "Directory to search in. Defaults to current working directory"
-          }
-        },
-        "required": ["pattern"]
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "files": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "List of matching file paths"
-          }
-        },
-        "required": ["files"]
-      }
+      "description": "Find files matching a glob pattern"
     },
     {
       "name": "filesystem__grep",
-      "description": "Search file contents using regex patterns",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "pattern": {
-            "type": "string",
-            "description": "Regex pattern to search for"
-          },
-          "path": {
-            "type": "string",
-            "description": "File or directory to search in. Defaults to current working directory"
-          },
-          "glob": {
-            "type": "string",
-            "description": "Glob pattern to filter files (e.g., \"*.js\", \"*.{ts,tsx}\")"
-          },
-          "type": {
-            "type": "string",
-            "description": "File type to search (e.g., \"js\", \"py\", \"rust\")"
-          },
-          "output_mode": {
-            "type": "string",
-            "enum": ["content", "files_with_matches", "count"],
-            "description": "Output mode. Defaults to \"files_with_matches\""
-          },
-          "-A": {
-            "type": "integer",
-            "description": "Lines to show after match (only for content mode)"
-          },
-          "-B": {
-            "type": "integer",
-            "description": "Lines to show before match (only for content mode)"
-          },
-          "-C": {
-            "type": "integer",
-            "description": "Lines to show before and after match (only for content mode)"
-          },
-          "-i": {
-            "type": "boolean",
-            "description": "Case insensitive search"
-          },
-          "-n": {
-            "type": "boolean",
-            "description": "Show line numbers (only for content mode). Defaults to true"
-          },
-          "multiline": {
-            "type": "boolean",
-            "description": "Enable multiline matching"
-          },
-          "head_limit": {
-            "type": "integer",
-            "description": "Limit output to first N entries"
-          },
-          "offset": {
-            "type": "integer",
-            "description": "Skip first N entries"
-          }
-        },
-        "required": ["pattern"]
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "matches": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "path": { "type": "string", "description": "File path containing the match" },
-                "line_number": { "type": "integer", "description": "Line number of the match (if applicable)" },
-                "content": { "type": "string", "description": "The matching line content (if output_mode is \"content\")" },
-                "count": { "type": "integer", "description": "Match count for this file (if output_mode is \"count\")" }
-              },
-              "required": ["path"]
-            },
-            "description": "List of matches"
-          },
-          "total": {
-            "type": "integer",
-            "description": "Total number of matches/files"
-          },
-          "truncated": {
-            "type": "boolean",
-            "description": "Whether results were truncated by head_limit"
-          }
-        },
-        "required": ["matches", "total", "truncated"]
-      }
+      "description": "Search file contents using regex patterns"
     }
   ],
   "compatibility": {
@@ -255,6 +43,244 @@
     "company.superrad.radical": {
       "scripts": {
         "build": "cargo build --release"
+      },
+      "static_responses": {
+        "tools/list": {
+          "tools": [
+            {
+              "name": "filesystem__read",
+              "description": "Read a file from the local filesystem",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "file_path": {
+                    "type": "string",
+                    "description": "Absolute path to the file to read"
+                  },
+                  "offset": {
+                    "type": "integer",
+                    "description": "Starting line number (1-indexed). Defaults to 1"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "description": "Number of lines to read. Defaults to 2000"
+                  }
+                },
+                "required": ["file_path"]
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "description": "The file content with line numbers in cat -n format"
+                  },
+                  "total_lines": {
+                    "type": "integer",
+                    "description": "Total number of lines in the file"
+                  },
+                  "start_line": {
+                    "type": "integer",
+                    "description": "Starting line number of the returned content"
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "description": "Ending line number of the returned content"
+                  },
+                  "truncated": {
+                    "type": "boolean",
+                    "description": "Whether the file was truncated"
+                  }
+                },
+                "required": ["content", "total_lines", "start_line", "end_line", "truncated"]
+              }
+            },
+            {
+              "name": "filesystem__write",
+              "description": "Write content to a file",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "file_path": {
+                    "type": "string",
+                    "description": "Absolute path to the file to write"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "Content to write to the file"
+                  }
+                },
+                "required": ["file_path", "content"]
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "bytes_written": {
+                    "type": "integer",
+                    "description": "Number of bytes written"
+                  }
+                },
+                "required": ["bytes_written"]
+              }
+            },
+            {
+              "name": "filesystem__edit",
+              "description": "Edit a file by replacing exact string matches",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "file_path": {
+                    "type": "string",
+                    "description": "Absolute path to the file to edit"
+                  },
+                  "old_string": {
+                    "type": "string",
+                    "description": "The exact string to find and replace"
+                  },
+                  "new_string": {
+                    "type": "string",
+                    "description": "The replacement string"
+                  },
+                  "replace_all": {
+                    "type": "boolean",
+                    "description": "If true, replace all occurrences. Defaults to false"
+                  }
+                },
+                "required": ["file_path", "old_string", "new_string"]
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "replacements": {
+                    "type": "integer",
+                    "description": "Number of replacements made"
+                  }
+                },
+                "required": ["replacements"]
+              }
+            },
+            {
+              "name": "filesystem__glob",
+              "description": "Find files matching a glob pattern",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "pattern": {
+                    "type": "string",
+                    "description": "Glob pattern to match files against (e.g., \"**/*.rs\", \"src/*.ts\")"
+                  },
+                  "path": {
+                    "type": "string",
+                    "description": "Directory to search in. Defaults to current working directory"
+                  }
+                },
+                "required": ["pattern"]
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "List of matching file paths"
+                  }
+                },
+                "required": ["files"]
+              }
+            },
+            {
+              "name": "filesystem__grep",
+              "description": "Search file contents using regex patterns",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "pattern": {
+                    "type": "string",
+                    "description": "Regex pattern to search for"
+                  },
+                  "path": {
+                    "type": "string",
+                    "description": "File or directory to search in. Defaults to current working directory"
+                  },
+                  "glob": {
+                    "type": "string",
+                    "description": "Glob pattern to filter files (e.g., \"*.js\", \"*.{ts,tsx}\")"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "File type to search (e.g., \"js\", \"py\", \"rust\")"
+                  },
+                  "output_mode": {
+                    "type": "string",
+                    "enum": ["content", "files_with_matches", "count"],
+                    "description": "Output mode. Defaults to \"files_with_matches\""
+                  },
+                  "-A": {
+                    "type": "integer",
+                    "description": "Lines to show after match (only for content mode)"
+                  },
+                  "-B": {
+                    "type": "integer",
+                    "description": "Lines to show before match (only for content mode)"
+                  },
+                  "-C": {
+                    "type": "integer",
+                    "description": "Lines to show before and after match (only for content mode)"
+                  },
+                  "-i": {
+                    "type": "boolean",
+                    "description": "Case insensitive search"
+                  },
+                  "-n": {
+                    "type": "boolean",
+                    "description": "Show line numbers (only for content mode). Defaults to true"
+                  },
+                  "multiline": {
+                    "type": "boolean",
+                    "description": "Enable multiline matching"
+                  },
+                  "head_limit": {
+                    "type": "integer",
+                    "description": "Limit output to first N entries"
+                  },
+                  "offset": {
+                    "type": "integer",
+                    "description": "Skip first N entries"
+                  }
+                },
+                "required": ["pattern"]
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "matches": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "path": { "type": "string", "description": "File path containing the match" },
+                        "line_number": { "type": "integer", "description": "Line number of the match (if applicable)" },
+                        "content": { "type": "string", "description": "The matching line content (if output_mode is \"content\")" },
+                        "count": { "type": "integer", "description": "Match count for this file (if output_mode is \"count\")" }
+                      },
+                      "required": ["path"]
+                    },
+                    "description": "List of matches"
+                  },
+                  "total": {
+                    "type": "integer",
+                    "description": "Total number of matches/files"
+                  },
+                  "truncated": {
+                    "type": "boolean",
+                    "description": "Whether results were truncated by head_limit"
+                  }
+                },
+                "required": ["matches", "total", "truncated"]
+              }
+            }
+          ]
+        }
       }
     }
   }

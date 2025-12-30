@@ -1,6 +1,6 @@
 # tools
 
-A collection of MCP servers for the Radical ecosystem.
+A collection of MCP servers for AI agents.
 
 ## Overview
 
@@ -8,13 +8,13 @@ This repository contains core MCP (Model Context Protocol) servers. Each server 
 
 ## Core Tools
 
-| Server | Description | Tools |
-|--------|-------------|-------|
-| `bash` | Shell command execution | `bash__exec` |
-| `filesystem` | File operations | `filesystem__read`, `filesystem__write`, `filesystem__edit`, `filesystem__glob`, `filesystem__grep` |
-| `system` | System utilities | `system__sleep`, `system__get_datetime`, `system__get_random_integer` |
-| `todolist` | Session-scoped task tracking | `todolist__get`, `todolist__set` |
-| `web` | Web fetch and search | `web__fetch`, `web__search` |
+| Server       | Description                  | Tools                                                                                               |
+| ------------ | ---------------------------- | --------------------------------------------------------------------------------------------------- |
+| `bash`       | Shell command execution      | `bash__exec`                                                                                        |
+| `filesystem` | File operations              | `filesystem__read`, `filesystem__write`, `filesystem__edit`, `filesystem__glob`, `filesystem__grep` |
+| `system`     | System utilities             | `system__sleep`, `system__get_datetime`, `system__get_random_integer`                               |
+| `todolist`   | Session-scoped task tracking | `todolist__get`, `todolist__set`                                                                    |
+| `web`        | Web fetch and search         | `web__fetch`, `web__search`                                                                         |
 
 ## Design Principles
 
@@ -26,9 +26,10 @@ Tools follow the naming convention `<server>__<tool>` to prevent collisions when
 
 All tools return structured JSON output with defined schemas. This enables reliable parsing and error handling by AI agents.
 
-### Manifest-Driven
+### MCPB Packaging
 
-Each server includes a `manifest.json` that declares:
+Each server follows the [MCPB (MCP Bundles)](https://github.com/modelcontextprotocol/mcpb) specification with a `manifest.json` that declares:
+
 - Server metadata (name, version, description)
 - Available tools with input/output schemas
 - User configuration options
