@@ -1,8 +1,9 @@
 {
   "manifest_version": "0.3",
   "name": "todolist",
+  "display_name": "Todolist MCP",
   "version": "0.1.0",
-  "description": "An MCP server",
+  "description": "Session-scoped task tracking for AI agents",
   "author": {
     "name": "Stephen Akinyemi"
   },
@@ -13,9 +14,112 @@
       "command": "${__dirname}/target/release/todolist"
     }
   },
+  "tools": [
+    {
+      "name": "todolist__get",
+      "description": "Get the current state of the todo list",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "todos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string",
+                  "description": "Task description in imperative form (e.g., \"Fix authentication bug\")"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["pending", "in_progress", "completed"],
+                  "description": "Current status of the task"
+                },
+                "activeForm": {
+                  "type": "string",
+                  "description": "Task description in present continuous form (e.g., \"Fixing authentication bug\")"
+                }
+              },
+              "required": ["content", "status", "activeForm"]
+            },
+            "description": "The current list of todos"
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total": { "type": "integer", "description": "Total number of items in the list" },
+              "pending": { "type": "integer", "description": "Number of pending items" },
+              "in_progress": { "type": "integer", "description": "Number of in-progress items" },
+              "completed": { "type": "integer", "description": "Number of completed items" }
+            },
+            "required": ["total", "pending", "in_progress", "completed"],
+            "description": "Summary of todo statuses"
+          }
+        },
+        "required": ["todos", "summary"]
+      }
+    },
+    {
+      "name": "todolist__set",
+      "description": "Replace the entire todo list. Server validates constraints",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "todos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string",
+                  "description": "Task description in imperative form (e.g., \"Fix authentication bug\")"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["pending", "in_progress", "completed"],
+                  "description": "Current status of the task"
+                },
+                "activeForm": {
+                  "type": "string",
+                  "description": "Task description in present continuous form (e.g., \"Fixing authentication bug\")"
+                }
+              },
+              "required": ["content", "status", "activeForm"]
+            },
+            "description": "The complete list of todos to set"
+          }
+        },
+        "required": ["todos"]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total": { "type": "integer", "description": "Total number of items in the list" },
+              "pending": { "type": "integer", "description": "Number of pending items" },
+              "in_progress": { "type": "integer", "description": "Number of in-progress items" },
+              "completed": { "type": "integer", "description": "Number of completed items" }
+            },
+            "required": ["total", "pending", "in_progress", "completed"],
+            "description": "Summary of todo statuses after the update"
+          }
+        },
+        "required": ["summary"]
+      }
+    }
+  ],
   "compatibility": {
     "platforms": [
-      "darwin"
+      "darwin",
+      "linux",
+      "win32"
     ]
   },
   "_meta": {

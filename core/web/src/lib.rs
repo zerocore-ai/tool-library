@@ -629,7 +629,7 @@ impl Server {
     /// Supports HTML pages (converted to markdown) and plain text.
     /// HTTP URLs are automatically upgraded to HTTPS.
     #[tool(
-        name = "web_fetch",
+        name = "web__fetch",
         description = "Fetch content from a URL and convert it to markdown."
     )]
     async fn web_fetch(
@@ -730,7 +730,7 @@ impl Server {
     /// - TAVILY_API_KEY
     /// - SERPAPI_API_KEY
     #[tool(
-        name = "web_search",
+        name = "web__search",
         description = "Search the web and return results with titles, URLs, and snippets."
     )]
     async fn web_search(
