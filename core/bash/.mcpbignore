@@ -1,0 +1,30 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# MCPB bundles
+*.mcpb
+
+# Rust source files
+src/
+Cargo.lock
+
+# Rust build artifacts (exclude everything except the release binary)
+target/debug/
+target/release/deps/
+target/release/build/
+target/release/examples/
+target/release/incremental/
+target/release/.fingerprint/
+target/.rustc_info.json
+target/.cargo-lock

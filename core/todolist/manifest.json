@@ -116,11 +116,7 @@
     }
   ],
   "compatibility": {
-    "platforms": [
-      "darwin",
-      "linux",
-      "win32"
-    ]
+    "platforms": ["darwin"]
   },
   "_meta": {
     "company.superrad.radical": {
