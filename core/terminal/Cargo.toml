@@ -7,6 +7,10 @@ edition = "2021"
 name = "terminal"
 path = "bin/main.rs"
 
+[[bin]]
+name = "terminal-attach"
+path = "bin/cli.rs"
+
 [lib]
 name = "terminal"
 path = "lib/lib.rs"
@@ -22,7 +26,16 @@ portable-pty = "0.8"
 vte = "0.13"
 
 # Async runtime
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "sync", "time", "signal"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "sync", "time", "signal", "net"] }
+
+# Terminal UI (for CLI)
+crossterm = "0.28"
+
+# CLI argument parsing
+clap = { version = "4", features = ["derive"] }
+
+# Ctrl+C handling
+ctrlc = "3"
 
 # Serialization
 serde = { version = "1", features = ["derive"] }

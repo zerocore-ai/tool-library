@@ -1,15 +1,17 @@
 //! Terminal session wrapper.
 
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use chrono::{DateTime, Utc};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use tokio::sync::mpsc;
 
 use crate::config::GlobalConfig;
 use crate::pty::{PtyOptions, PtySession};
+use crate::socket::{SocketInput, SocketServer};
 use crate::terminal::TerminalState;
 use crate::types::{CursorPosition, Dimensions, Result};
 
@@ -77,6 +79,14 @@ pub struct SessionInfo {
 
     /// Whether the session is healthy (no errors, not exited).
     pub healthy: bool,
+
+    /// Path to the Unix socket for attachment (if enabled).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub socket_path: Option<String>,
+
+    /// Number of clients attached via socket.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub attached_clients: Option<usize>,
 }
 
 /// A terminal session.
@@ -104,6 +114,12 @@ pub struct TerminalSession {
 
     /// Error message if a fatal error occurred.
     pub error: Option<String>,
+
+    /// Socket server for external attachment.
+    socket_server: Option<SocketServer>,
+
+    /// Receiver for input from socket clients.
+    socket_input_rx: Option<mpsc::Receiver<SocketInput>>,
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -144,7 +160,81 @@ impl TerminalSession {
             state,
             reader,
             error: None,
+            socket_server: None,
+            socket_input_rx: None,
         })
+    }
+
+    /// Start the socket server for this session, enabling external attachment.
+    pub fn start_socket_server(&mut self) -> Result<()> {
+        if self.socket_server.is_some() {
+            return Ok(()); // Already started
+        }
+
+        let id = self.id.clone();
+        let program = self.program.clone();
+        let args = self.args.clone();
+        let pid = self.state.pty().pid();
+        let dimensions = self.state.dimensions();
+
+        // We need a way to get the screen content. Since we can't clone TerminalState,
+        // we'll just return an empty string and let clients get the initial screen
+        // from the Info message.
+        let screen_fn = move || String::new();
+
+        let (server, input_rx) = SocketServer::start(
+            id,
+            program,
+            args,
+            pid,
+            dimensions,
+            screen_fn,
+        )
+        .map_err(|e| crate::types::TerminalError::Io(e))?;
+
+        self.socket_server = Some(server);
+        self.socket_input_rx = Some(input_rx);
+
+        tracing::info!(session_id = %self.id, "Socket server started");
+        Ok(())
+    }
+
+    /// Get the socket path if the socket server is running.
+    pub fn socket_path(&self) -> Option<&Path> {
+        self.socket_server.as_ref().map(|s| s.socket_path())
+    }
+
+    /// Get the number of attached clients.
+    pub fn attached_client_count(&self) -> usize {
+        self.socket_server
+            .as_ref()
+            .map(|s| s.client_count())
+            .unwrap_or(0)
+    }
+
+    /// Broadcast output to attached clients.
+    pub fn broadcast_output(&self, data: &[u8]) {
+        if let Some(server) = &self.socket_server {
+            server.broadcast_output(data);
+        }
+    }
+
+    /// Drain input from socket clients and write to PTY.
+    pub fn drain_socket_input(&mut self) -> Result<()> {
+        if let Some(rx) = &mut self.socket_input_rx {
+            while let Ok(input) = rx.try_recv() {
+                match input {
+                    SocketInput::Data(data) => {
+                        self.state.pty().write(&data)?;
+                    }
+                    SocketInput::Resize { rows, cols } => {
+                        // TODO: Implement resize if needed
+                        tracing::debug!(rows, cols, "Resize request from socket client (not implemented)");
+                    }
+                }
+            }
+        }
+        Ok(())
     }
 
     /// Get session information.
@@ -159,6 +249,12 @@ impl TerminalSession {
             exited: self.state.exited(),
             exit_code: self.state.exit_code(),
             healthy: self.is_healthy(),
+            socket_path: self.socket_path().map(|p| p.to_string_lossy().into_owned()),
+            attached_clients: if self.socket_server.is_some() {
+                Some(self.attached_client_count())
+            } else {
+                None
+            },
         }
     }
 
@@ -190,12 +286,17 @@ impl TerminalSession {
 
     /// Process pending messages from the reader.
     pub fn drain_reader(&mut self) -> Result<bool> {
+        // Also drain socket input
+        let _ = self.drain_socket_input();
+
         let messages = self.reader.drain();
         let mut had_data = false;
 
         for msg in messages {
             match msg {
                 ReaderMessage::Data(data) => {
+                    // Broadcast to socket clients before processing
+                    self.broadcast_output(&data);
                     self.state.process_output(&data);
                     had_data = true;
                 }
@@ -227,6 +328,9 @@ impl TerminalSession {
         let deadline = Instant::now() + Duration::from_millis(timeout_ms.max(1));
 
         loop {
+            // Also drain socket input
+            let _ = self.drain_socket_input();
+
             // First drain any immediately available messages
             if self.drain_reader()? {
                 had_data = true;
@@ -247,6 +351,8 @@ impl TerminalSession {
             if let Some(msg) = self.reader.recv_timeout(wait_time).await {
                 match msg {
                     ReaderMessage::Data(data) => {
+                        // Broadcast to socket clients
+                        self.broadcast_output(&data);
                         self.state.process_output(&data);
                         had_data = true;
                     }
@@ -271,6 +377,14 @@ impl TerminalSession {
         }
 
         Ok(had_data)
+    }
+
+    /// Shutdown the socket server if running.
+    pub async fn shutdown_socket(&mut self) {
+        if let Some(mut server) = self.socket_server.take() {
+            server.shutdown().await;
+        }
+        self.socket_input_rx = None;
     }
 }
 
