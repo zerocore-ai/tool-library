@@ -129,6 +129,38 @@ Get information about a terminal session without reading content.
 | `healthy` | boolean | Whether session is healthy |
 | `cwd` | string | Current working directory |
 
+## Session Attachment
+
+Sessions can be attached to from the command line, allowing humans to observe and interact with AI-controlled terminal sessions in real-time.
+
+Each session creates a Unix socket at `/tmp/terminal/<session_id>.sock` that accepts multiple concurrent connections.
+
+### CLI Commands
+
+```bash
+# List active sessions
+terminal list
+
+# Attach to a session (supports prefix matching)
+terminal attach sess_abc123
+terminal attach sess_a  # prefix match
+
+# Show session details
+terminal info sess_abc123
+
+# Run MCP server (default when no command specified)
+terminal serve
+terminal  # equivalent
+```
+
+### Attach Mode
+
+When attached:
+- See real-time terminal output
+- Type to send input to the session
+- Press `Ctrl+C` to detach (returns to your shell)
+- Multiple users can attach simultaneously
+
 ## Configuration
 
 ### MCPB User Config

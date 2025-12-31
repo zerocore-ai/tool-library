@@ -55,7 +55,14 @@ impl SessionManager {
         }
 
         // Create the session
-        let session = TerminalSession::new(opts, &self.config)?;
+        let mut session = TerminalSession::new(opts, &self.config)?;
+
+        // Start socket server for attachment support
+        if let Err(e) = session.start_socket_server() {
+            tracing::warn!("Failed to start socket server: {}", e);
+            // Continue without socket support
+        }
+
         let info = session.info();
         let id = session.id.clone();
 

@@ -4,11 +4,15 @@
 //! We use short-lived programs (echo, cat, sleep) to avoid shell timing issues.
 
 use std::collections::HashMap;
+use std::io::{Read, Write};
+use std::os::unix::net::UnixStream;
+use std::path::Path;
 use std::time::Duration;
 
 use terminal::{
     GlobalConfig, OutputFormat, SessionManager, ViewMode,
     session::{CreateSessionOptions, is_shell_program},
+    socket::SOCKET_DIR,
 };
 
 //--------------------------------------------------------------------------------------------------
@@ -422,5 +426,184 @@ async fn test_exit_detection() {
         assert_eq!(session.state.exit_code(), Some(42));
     }
 
+    manager.shutdown().await;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Tests: Socket Attachment
+//--------------------------------------------------------------------------------------------------
+
+#[tokio::test]
+async fn test_socket_created_on_session_start() {
+    let config = create_test_config();
+    let manager = SessionManager::new(config);
+
+    // Create a cat process
+    let opts = CreateSessionOptions {
+        program: Some("/bin/cat".to_string()),
+        args: vec![],
+        ..Default::default()
+    };
+
+    let info = manager.create_session(opts).await.unwrap();
+
+    // Check that socket path is reported
+    assert!(info.socket_path.is_some(), "Socket path should be set");
+    let socket_path = info.socket_path.unwrap();
+    assert!(socket_path.contains(&info.session_id));
+
+    // Check that socket file exists
+    let path = Path::new(&socket_path);
+    assert!(path.exists(), "Socket file should exist at {}", socket_path);
+
+    // Cleanup
+    manager.destroy_session(&info.session_id, true).await.ok();
+
+    // Socket should be cleaned up
+    assert!(!path.exists(), "Socket file should be removed after destroy");
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn test_socket_connect_receives_info() {
+    let config = create_test_config();
+    let manager = SessionManager::new(config);
+
+    // Create a cat process
+    let opts = CreateSessionOptions {
+        program: Some("/bin/cat".to_string()),
+        args: vec![],
+        ..Default::default()
+    };
+
+    let info = manager.create_session(opts).await.unwrap();
+    let socket_path = info.socket_path.clone().unwrap();
+
+    // Give socket server time to start accepting connections
+    tokio::time::sleep(Duration::from_millis(100)).await;
+
+    // Connect to the socket
+    let mut stream = UnixStream::connect(&socket_path).expect("Failed to connect to socket");
+    stream.set_nonblocking(false).unwrap();
+    stream.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
+
+    // Read the info message header
+    let mut header = [0u8; 5]; // type(1) + length(4)
+    stream.read_exact(&mut header).expect("Failed to read header");
+
+    let msg_type = header[0];
+    let len = u32::from_be_bytes([header[1], header[2], header[3], header[4]]) as usize;
+
+    // Message type 0x04 is INFO
+    assert_eq!(msg_type, 0x04, "First message should be INFO");
+    assert!(len > 0, "INFO message should have content");
+
+    // Read the payload
+    let mut payload = vec![0u8; len];
+    stream.read_exact(&mut payload).expect("Failed to read payload");
+
+    // Parse as JSON
+    let info_msg: serde_json::Value = serde_json::from_slice(&payload).expect("Invalid JSON");
+    assert_eq!(info_msg["session_id"], info.session_id);
+    assert_eq!(info_msg["program"], "/bin/cat");
+
+    // Cleanup
+    drop(stream);
+    manager.destroy_session(&info.session_id, true).await.ok();
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn test_socket_receives_output() {
+    let config = create_test_config();
+    let manager = SessionManager::new(config);
+
+    // Create a cat process
+    let opts = CreateSessionOptions {
+        program: Some("/bin/cat".to_string()),
+        args: vec![],
+        ..Default::default()
+    };
+
+    let info = manager.create_session(opts).await.unwrap();
+    let socket_path = info.socket_path.clone().unwrap();
+    let session_id = info.session_id.clone();
+
+    // Give socket server time to start accepting connections
+    tokio::time::sleep(Duration::from_millis(100)).await;
+
+    // Connect to the socket
+    let mut stream = UnixStream::connect(&socket_path).expect("Failed to connect to socket");
+    stream.set_nonblocking(false).unwrap();
+    stream.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
+
+    // Read and discard INFO message
+    let mut header = [0u8; 5];
+    stream.read_exact(&mut header).unwrap();
+    let len = u32::from_be_bytes([header[1], header[2], header[3], header[4]]) as usize;
+    let mut payload = vec![0u8; len];
+    stream.read_exact(&mut payload).unwrap();
+
+    // Send input to the PTY
+    {
+        let session = manager.get(&session_id).await.unwrap();
+        let session = session.lock().await;
+        session.state.pty().write(b"hello socket\n").unwrap();
+    }
+
+    // Drain reader to broadcast output
+    tokio::time::sleep(Duration::from_millis(100)).await;
+    {
+        let session = manager.get(&session_id).await.unwrap();
+        let mut session = session.lock().await;
+        session.drain_reader().unwrap();
+    }
+
+    // Read output from socket
+    stream.set_nonblocking(true).unwrap();
+    let mut buf = [0u8; 1024];
+    let mut received_output = false;
+
+    // Try to read any output messages
+    for _ in 0..10 {
+        match stream.read(&mut buf) {
+            Ok(n) if n >= 5 => {
+                let msg_type = buf[0];
+                if msg_type == 0x01 { // OUTPUT
+                    received_output = true;
+                    break;
+                }
+            }
+            Ok(_) => {}
+            Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                std::thread::sleep(Duration::from_millis(50));
+            }
+            Err(_) => break,
+        }
+    }
+
+    assert!(received_output, "Should have received output via socket");
+
+    // Cleanup
+    drop(stream);
+    manager.destroy_session(&session_id, true).await.ok();
+}
+
+#[tokio::test]
+async fn test_socket_directory_created() {
+    // Ensure socket directory exists after creating a session
+    let config = create_test_config();
+    let manager = SessionManager::new(config);
+
+    let opts = CreateSessionOptions {
+        program: Some("/bin/echo".to_string()),
+        args: vec!["test".to_string()],
+        ..Default::default()
+    };
+
+    manager.create_session(opts).await.unwrap();
+
+    let socket_dir = Path::new(SOCKET_DIR);
+    assert!(socket_dir.exists(), "Socket directory should exist");
+
+    tokio::time::sleep(Duration::from_millis(50)).await;
     manager.shutdown().await;
 }

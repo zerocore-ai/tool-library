@@ -22,6 +22,7 @@ pub mod input;
 pub mod pty;
 pub mod server;
 pub mod session;
+pub mod socket;
 pub mod terminal;
 pub mod tools;
 pub mod types;
