@@ -1,4 +1,4 @@
-//! terminal__get_info tool implementation.
+//! terminal__info tool implementation.
 
 use std::sync::Arc;
 

@@ -73,7 +73,7 @@ impl Default for Server {
 impl Server {
     /// Create a new terminal session.
     #[tool(
-        name = "terminal__create_session",
+        name = "terminal__create",
         description = "Create a new terminal session running any program (shell by default). Returns a session_id for subsequent operations."
     )]
     async fn create_session(
@@ -85,7 +85,7 @@ impl Server {
 
     /// Destroy a terminal session.
     #[tool(
-        name = "terminal__destroy_session",
+        name = "terminal__destroy",
         description = "Terminate a terminal session and clean up resources."
     )]
     async fn destroy_session(
@@ -97,7 +97,7 @@ impl Server {
 
     /// List all terminal sessions.
     #[tool(
-        name = "terminal__list_sessions",
+        name = "terminal__list",
         description = "List all active terminal sessions."
     )]
     async fn list_sessions(&self) -> Result<Json<ListSessionsOutput>, McpError> {
@@ -124,7 +124,7 @@ impl Server {
 
     /// Get information about a terminal session.
     #[tool(
-        name = "terminal__get_info",
+        name = "terminal__info",
         description = "Get information about a terminal session without reading content."
     )]
     async fn get_info(
@@ -148,9 +148,9 @@ impl ServerHandler for Server {
             server_info: Implementation::from_build_env(),
             instructions: Some(
                 "Terminal MCP server providing PTY-based terminal sessions. \
-                 Create sessions with terminal__create_session, send input with terminal__send, \
-                 read output with terminal__read, and manage sessions with terminal__list_sessions \
-                 and terminal__destroy_session."
+                 Create sessions with terminal__create, send input with terminal__send, \
+                 read output with terminal__read, and manage sessions with terminal__list \
+                 and terminal__destroy."
                     .to_string(),
             ),
         }
