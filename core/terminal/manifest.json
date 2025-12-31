@@ -14,10 +14,7 @@
     }
   },
   "compatibility": {
-    "platforms": [
-      "darwin",
-      "linux"
-    ]
+    "platforms": ["darwin"]
   },
   "tools": [
     {

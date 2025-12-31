@@ -1,6 +1,6 @@
 # tools
 
-A collection of MCP servers for AI agents.
+A collection of MCP tools for AI agents.
 
 ## Overview
 
@@ -8,13 +8,15 @@ This repository contains core MCP (Model Context Protocol) servers. Each server 
 
 ## Core Tools
 
-| Server       | Description                  | Tools                                                                                               |
-| ------------ | ---------------------------- | --------------------------------------------------------------------------------------------------- |
-| `bash`       | Shell command execution      | `bash__exec`                                                                                        |
-| `filesystem` | File operations              | `filesystem__read`, `filesystem__write`, `filesystem__edit`, `filesystem__glob`, `filesystem__grep` |
-| `system`     | System utilities             | `system__sleep`, `system__get_datetime`, `system__get_random_integer`                               |
-| `todolist`   | Session-scoped task tracking | `todolist__get`, `todolist__set`                                                                    |
-| `web`        | Web fetch and search         | `web__fetch`, `web__search`                                                                         |
+| Server        | Description                              | Tools                                                                                               |
+| ------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `bash`        | Shell command execution                  | `bash__exec`                                                                                        |
+| `elicitation` | User input via structured questions      | `elicitation__clarify`                                                                              |
+| `filesystem`  | File operations                          | `filesystem__read`, `filesystem__write`, `filesystem__edit`, `filesystem__glob`, `filesystem__grep` |
+| `system`      | System utilities                         | `system__sleep`, `system__get_datetime`, `system__get_random_integer`                               |
+| `terminal`    | PTY-based terminal sessions              | `terminal__create`, `terminal__destroy`, `terminal__list`, `terminal__send`, `terminal__read`, `terminal__info` |
+| `todolist`    | Session-scoped task tracking             | `todolist__get`, `todolist__set`                                                                    |
+| `web`         | Web fetch and search                     | `web__fetch`, `web__search`                                                                         |
 
 ## Design Principles
 
@@ -45,11 +47,12 @@ Errors are returned as structured MCP errors with error codes, enabling agents t
 tools/
 ├── core/
 │   ├── bash/
+│   ├── elicitation/
 │   ├── filesystem/
 │   ├── system/
+│   ├── terminal/
 │   ├── todolist/
 │   └── web/
-└── test/
 ```
 
 ## Platform Support
