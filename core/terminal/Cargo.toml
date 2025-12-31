@@ -7,10 +7,6 @@ edition = "2021"
 name = "terminal"
 path = "bin/main.rs"
 
-[[bin]]
-name = "terminal-attach"
-path = "bin/cli.rs"
-
 [lib]
 name = "terminal"
 path = "lib/lib.rs"
