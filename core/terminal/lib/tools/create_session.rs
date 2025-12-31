@@ -1,4 +1,4 @@
-//! terminal__create_session tool implementation.
+//! terminal__create tool implementation.
 
 use std::collections::HashMap;
 use std::path::PathBuf;

@@ -1,4 +1,4 @@
-//! terminal__destroy_session tool implementation.
+//! terminal__destroy tool implementation.
 
 use std::sync::Arc;
 

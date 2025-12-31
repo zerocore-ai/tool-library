@@ -21,7 +21,7 @@
   },
   "tools": [
     {
-      "name": "terminal__create_session",
+      "name": "terminal__create",
       "description": "Create a new terminal session running any program (shell by default). Returns a session_id for subsequent operations.",
       "input_schema": {
         "type": "object",
@@ -79,7 +79,7 @@
       }
     },
     {
-      "name": "terminal__destroy_session",
+      "name": "terminal__destroy",
       "description": "Terminate a terminal session and clean up resources.",
       "input_schema": {
         "type": "object",
@@ -104,7 +104,7 @@
       }
     },
     {
-      "name": "terminal__list_sessions",
+      "name": "terminal__list",
       "description": "List all active terminal sessions.",
       "input_schema": {
         "type": "object",
@@ -251,7 +251,7 @@
       }
     },
     {
-      "name": "terminal__get_info",
+      "name": "terminal__info",
       "description": "Get information about a terminal session without reading content.",
       "input_schema": {
         "type": "object",

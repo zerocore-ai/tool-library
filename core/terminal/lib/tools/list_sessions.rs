@@ -1,4 +1,4 @@
-//! terminal__list_sessions tool implementation.
+//! terminal__list tool implementation.
 
 use std::sync::Arc;
 

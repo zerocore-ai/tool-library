@@ -4,7 +4,7 @@ An MCP server providing PTY-based terminal sessions with full terminal emulation
 
 ## Tools
 
-### `terminal__create_session`
+### `terminal__create`
 
 Create a new terminal session running any program (shell by default).
 
@@ -28,7 +28,7 @@ Create a new terminal session running any program (shell by default).
 | `program` | string | Program running in the session |
 | `dimensions` | object | Terminal dimensions (`rows`, `cols`) |
 
-### `terminal__destroy_session`
+### `terminal__destroy`
 
 Terminate a terminal session and clean up resources.
 
@@ -44,7 +44,7 @@ Terminate a terminal session and clean up resources.
 | `destroyed` | boolean | Whether the session was destroyed |
 | `exit_code` | integer | Exit code of the terminated process |
 
-### `terminal__list_sessions`
+### `terminal__list`
 
 List all active terminal sessions.
 
@@ -105,7 +105,7 @@ Read output from a terminal session.
 | `exited` | boolean | Whether the process exited |
 | `exit_code` | integer | Exit code (if exited) |
 
-### `terminal__get_info`
+### `terminal__info`
 
 Get information about a terminal session without reading content.
 
@@ -157,10 +157,10 @@ rad tool run build /path/to/terminal
 rad tool validate /path/to/terminal
 
 # Test creating a session
-rad tool call /path/to/terminal -m terminal__create_session
+rad tool call /path/to/terminal -m terminal__create
 
 # List active sessions
-rad tool call /path/to/terminal -m terminal__list_sessions
+rad tool call /path/to/terminal -m terminal__list
 ```
 
 ### Manual Build
