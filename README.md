@@ -4,9 +4,9 @@ A collection of MCP tools for AI agents.
 
 ## Overview
 
-This repository contains core MCP (Model Context Protocol) servers. Each server provides a set of related tools that AI agents can use to interact with the system.
+This repository contains MCP (Model Context Protocol) servers. Each server provides a set of related tools that AI agents can use to interact with the system.
 
-## Core Tools
+## Tools
 
 | Server        | Description                              | Tools                                                                                               |
 | ------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------- |
@@ -45,14 +45,16 @@ Errors are returned as structured MCP errors with error codes, enabling agents t
 
 ```
 tools/
-├── core/
-│   ├── bash/
-│   ├── elicitation/
-│   ├── filesystem/
-│   ├── system/
-│   ├── terminal/
-│   ├── todolist/
-│   └── web/
+├── bash/
+├── elicitation/
+├── filesystem/
+├── system/
+├── terminal/
+├── todolist/
+├── web/
+└── test/
+    ├── hello/      # Example: basic server with user config
+    └── auth/       # Example: HTTP transport with OAuth
 ```
 
 ## Platform Support
