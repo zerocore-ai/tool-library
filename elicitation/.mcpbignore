@@ -20,6 +20,5 @@ src/
 Cargo.lock
 
 # Rust build artifacts (ignore everything except release and debug binaries)
-target/
-!target/release/**
-!target/debug/**
+target/**
+!target/release/elicitation
