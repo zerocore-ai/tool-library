@@ -179,20 +179,28 @@ When installed via MCPB, configure defaults through the manifest:
 
 ## Setup
 
-### Using rad CLI (Recommended)
+### Using tool CLI (Recommended)
+
+Install from https://github.com/zerocore-ai/tool-cli
 
 ```bash
 # Build the tool
-rad tool run build /path/to/terminal
+tool run build /path/to/terminal
+```
 
+```bash
 # Validate the manifest
-rad tool validate /path/to/terminal
+tool validate /path/to/terminal
+```
 
+```bash
 # Test creating a session
-rad tool call /path/to/terminal -m terminal__create
+tool call /path/to/terminal -m terminal__create
+```
 
+```bash
 # List active sessions
-rad tool call /path/to/terminal -m terminal__list
+tool call /path/to/terminal -m terminal__list
 ```
 
 ### Manual Build

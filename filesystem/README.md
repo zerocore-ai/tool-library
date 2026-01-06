@@ -101,23 +101,33 @@ Search file contents using regex patterns.
 
 ## Setup
 
-### Using rad CLI (Recommended)
+### Using tool CLI (Recommended)
+
+Install from https://github.com/zerocore-ai/tool-cli
 
 ```bash
 # Build the tool
-rad tool run build /path/to/filesystem
+tool run build /path/to/filesystem
+```
 
+```bash
 # Validate the manifest
-rad tool validate /path/to/filesystem
+tool validate /path/to/filesystem
+```
 
+```bash
 # Test reading a file
-rad tool call /path/to/filesystem -m filesystem__read -p file_path=/path/to/file.txt
+tool call /path/to/filesystem -m filesystem__read -p file_path=/path/to/file.txt
+```
 
+```bash
 # Search for files
-rad tool call /path/to/filesystem -m filesystem__glob -p pattern="**/*.rs"
+tool call /path/to/filesystem -m filesystem__glob -p pattern="**/*.rs"
+```
 
+```bash
 # Search file contents
-rad tool call /path/to/filesystem -m filesystem__grep -p pattern=TODO -p path=.
+tool call /path/to/filesystem -m filesystem__grep -p pattern=TODO -p path=.
 ```
 
 ### Manual Build

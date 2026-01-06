@@ -35,27 +35,18 @@ Each option object:
 
 ## Setup
 
-### Using rad CLI (Recommended)
+### Using tool CLI (Recommended)
+
+Install from https://github.com/zerocore-ai/tool-cli
 
 ```bash
 # Build the tool
-rad tool run build /path/to/elicitation
+tool run build /path/to/elicitation
+```
 
+```bash
 # Validate the manifest
-rad tool validate /path/to/elicitation
-
-# Test the tool (using --json for complex input)
-rad tool call /path/to/elicitation -m elicitation__clarify --json '{
-  "questions": [{
-    "question": "Which language should we use?",
-    "header": "Language",
-    "multiSelect": false,
-    "options": [
-      {"label": "TypeScript", "description": "Static typing with JavaScript"},
-      {"label": "Python", "description": "Simple and readable syntax"}
-    ]
-  }]
-}'
+tool validate /path/to/elicitation
 ```
 
 ### Manual Build

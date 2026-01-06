@@ -46,25 +46,23 @@ Each todo item:
 
 ## Setup
 
-### Using rad CLI (Recommended)
+### Using tool CLI (Recommended)
+
+Install from https://github.com/zerocore-ai/tool-cli
 
 ```bash
 # Build the tool
-rad tool run build /path/to/todolist
+tool run build /path/to/todolist
+```
 
+```bash
 # Validate the manifest
-rad tool validate /path/to/todolist
+tool validate /path/to/todolist
+```
 
+```bash
 # Get current todos
-rad tool call /path/to/todolist -m todolist__get
-
-# Set todos (using --json for complex input)
-rad tool call /path/to/todolist -m todolist__set --json '{
-  "todos": [
-    {"content": "Implement feature X", "status": "in_progress", "activeForm": "Implementing feature X"},
-    {"content": "Write tests", "status": "pending", "activeForm": "Writing tests"}
-  ]
-}'
+tool call /path/to/todolist -m todolist__get
 ```
 
 ### Manual Build
