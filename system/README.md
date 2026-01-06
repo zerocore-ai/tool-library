@@ -47,23 +47,33 @@ Generate a random integer within an inclusive range.
 
 ## Setup
 
-### Using rad CLI (Recommended)
+### Using tool CLI (Recommended)
+
+Install from https://github.com/zerocore-ai/tool-cli
 
 ```bash
 # Build the tool
-rad tool run build /path/to/system
+tool run build /path/to/system
+```
 
+```bash
 # Validate the manifest
-rad tool validate /path/to/system
+tool validate /path/to/system
+```
 
+```bash
 # Test getting current time
-rad tool call /path/to/system -m system__get_datetime
+tool call /path/to/system -m system__get_datetime
+```
 
+```bash
 # Generate a random number
-rad tool call /path/to/system -m system__get_random_integer -p min=1 -p max=100
+tool call /path/to/system -m system__get_random_integer -p min=1 -p max=100
+```
 
+```bash
 # Sleep for 1 second
-rad tool call /path/to/system -m system__sleep -p duration_ms=1000
+tool call /path/to/system -m system__sleep -p duration_ms=1000
 ```
 
 ### Manual Build

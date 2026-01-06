@@ -28,17 +28,23 @@ Execute a shell command and return its output.
 
 ## Setup
 
-### Using rad CLI (Recommended)
+### Using tool CLI (Recommended)
+
+Install from https://github.com/zerocore-ai/tool-cli
 
 ```bash
 # Build the tool
-rad tool run build /path/to/bash
+tool run build /path/to/bash
+```
 
+```bash
 # Validate the manifest
-rad tool validate /path/to/bash
+tool validate /path/to/bash
+```
 
+```bash
 # Test the tool
-rad tool call /path/to/bash -m bash__exec -p command="echo hello"
+tool call /path/to/bash -m bash__exec -p command="echo hello"
 ```
 
 ### Manual Build
