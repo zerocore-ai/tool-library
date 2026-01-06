@@ -19,12 +19,7 @@ Thumbs.db
 src/
 Cargo.lock
 
-# Rust build artifacts (exclude everything except the release binary)
-target/debug/
-target/release/deps/
-target/release/build/
-target/release/examples/
-target/release/incremental/
-target/release/.fingerprint/
-target/.rustc_info.json
-target/.cargo-lock
+# Rust build artifacts (ignore everything except release and debug binaries)
+target/
+!target/release/**
+!target/debug/**
