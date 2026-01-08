@@ -65,42 +65,42 @@ curl -fsSL https://raw.githubusercontent.com/zerocore-ai/tool-cli/main/install.s
 **Inspect server capabilities:**
 
 ```sh
-tool info ./system          # Show tools, prompts, resources
-tool info ./system --tools  # Show only tools
-tool info ./system --json   # Output as JSON
+tool info ./core/system          # Show tools, prompts, resources
+tool info ./core/system --tools  # Show only tools
+tool info ./core/system --json   # Output as JSON
 ```
 
 **Call a tool method:**
 
 ```sh
 # System tools
-tool call ./system -m system__get_datetime
-tool call ./system -m system__sleep -p duration_ms=1000
-tool call ./system -m system__get_random_integer -p min=1 -p max=100
+tool call ./core/system -m system__get_datetime
+tool call ./core/system -m system__sleep -p duration_ms=1000
+tool call ./core/system -m system__get_random_integer -p min=1 -p max=100
 
 # Filesystem tools
-tool call ./filesystem -m filesystem__glob -p pattern="**/*.rs"
-tool call ./filesystem -m filesystem__read -p path="./README.md"
+tool call ./core/filesystem -m filesystem__glob -p pattern="**/*.rs"
+tool call ./core/filesystem -m filesystem__read -p path="./README.md"
 
 # Bash tool
-tool call ./bash -m bash__exec -p command="echo hello"
+tool call ./core/bash -m bash__exec -p command="echo hello"
 
 # Todolist tools
-tool call ./todolist -m todolist__get
-tool call ./todolist -m todolist__set -p todos='[{"content":"Test task","status":"pending"}]'
+tool call ./core/todolist -m todolist__get
+tool call ./core/todolist -m todolist__set -p todos='[{"content":"Test task","status":"pending"}]'
 ```
 
 **Verbose mode (see MCP protocol messages):**
 
 ```sh
-tool call ./system -m system__get_datetime --verbose
+tool call ./core/system -m system__get_datetime --verbose
 ```
 
 **Validate manifest:**
 
 ```sh
-tool validate ./system
-tool validate ./system --strict  # Treat warnings as errors
+tool validate ./core/system
+tool validate ./core/system --strict  # Treat warnings as errors
 ```
 
 ## License
