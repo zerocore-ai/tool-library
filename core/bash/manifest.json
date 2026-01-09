@@ -9,9 +9,15 @@
   },
   "server": {
     "type": "binary",
-    "entry_point": "target/release/bash",
+    "entry_point": "dist/bash-linux-x86_64",
     "mcp_config": {
-      "command": "${__dirname}/target/release/bash"
+      "command": "${__dirname}/dist/bash-linux-x86_64",
+      "args": [],
+      "env": {},
+      "platform_overrides": {
+        "darwin": { "command": "${__dirname}/dist/bash-darwin-arm64" },
+        "linux": { "command": "${__dirname}/dist/bash-linux-x86_64" }
+      }
     }
   },
   "tools": [
@@ -21,12 +27,22 @@
     }
   ],
   "compatibility": {
-    "platforms": ["darwin"]
+    "platforms": ["darwin", "linux"]
   },
   "_meta": {
-    "company.superrad.radical": {
+    "company.superrad.mcpb": {
       "scripts": {
         "build": "cargo build --release"
+      },
+      "mcp_config": {
+        "platform_overrides": {
+          "darwin-arm64": { "command": "${__dirname}/dist/bash-darwin-arm64" },
+          "linux-arm64": { "command": "${__dirname}/dist/bash-linux-arm64" },
+          "linux-x86_64": { "command": "${__dirname}/dist/bash-linux-x86_64" }
+        }
+      },
+      "compatibility": {
+        "platforms": ["darwin-arm64", "linux-arm64", "linux-x86_64"]
       },
       "static_responses": {
         "tools/list": {

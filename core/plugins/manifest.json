@@ -1,27 +1,162 @@
 {
   "manifest_version": "0.3",
   "name": "plugins",
+  "display_name": "Plugins MCP",
   "version": "0.1.0",
-  "description": "An MCP server",
+  "description": "Plugin registry search and resolution for AI agents",
   "author": {
     "name": "Stephen Akinyemi"
   },
   "server": {
     "type": "binary",
-    "entry_point": "target/release/plugins",
+    "entry_point": "dist/plugins-linux-x86_64",
     "mcp_config": {
-      "command": "${__dirname}/target/release/plugins"
+      "command": "${__dirname}/dist/plugins-linux-x86_64",
+      "args": [],
+      "env": {},
+      "platform_overrides": {
+        "darwin": { "command": "${__dirname}/dist/plugins-darwin-arm64" },
+        "linux": { "command": "${__dirname}/dist/plugins-linux-x86_64" }
+      }
     }
   },
+  "tools": [
+    { "name": "plugins__search", "description": "Search the plugin registry for agents, personas, commands, tools, snippets, and packs" },
+    { "name": "plugins__resolve", "description": "Resolve a plugin reference to its manifest and content" }
+  ],
   "compatibility": {
-    "platforms": [
-      "darwin"
-    ]
+    "platforms": ["darwin", "linux"]
   },
   "_meta": {
-    "company.superrad.radical": {
+    "company.superrad.mcpb": {
       "scripts": {
         "build": "cargo build --release"
+      },
+      "mcp_config": {
+        "platform_overrides": {
+          "darwin-arm64": { "command": "${__dirname}/dist/plugins-darwin-arm64" },
+          "linux-arm64": { "command": "${__dirname}/dist/plugins-linux-arm64" },
+          "linux-x86_64": { "command": "${__dirname}/dist/plugins-linux-x86_64" }
+        }
+      },
+      "compatibility": {
+        "platforms": ["darwin-arm64", "linux-arm64", "linux-x86_64"]
+      },
+      "static_responses": {
+        "tools/list": {
+          "tools": [
+            {
+              "name": "plugins__search",
+              "description": "Search the plugin registry for agents, personas, commands, tools, snippets, and packs.",
+              "input_schema": {
+                "type": "object",
+                "required": ["query"],
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "Search query text (full-text search on name, description, keywords)"
+                  },
+                  "plugin_type": {
+                    "type": "string",
+                    "enum": ["agent", "persona", "command", "tool", "snippet", "pack"],
+                    "description": "Filter by plugin type"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "Maximum number of results to return (1-100, default: 20)"
+                  }
+                }
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "results": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "namespace": { "type": "string", "description": "Plugin namespace (e.g., \"appcypher\")" },
+                        "name": { "type": "string", "description": "Plugin name (e.g., \"genesis\")" },
+                        "reference": { "type": "string", "description": "Full plugin reference (namespace/name)" },
+                        "description": { "type": "string", "description": "Short description" },
+                        "plugin_type": { "type": "string", "description": "Plugin type" },
+                        "latest_version": { "type": "string", "description": "Latest version" },
+                        "total_downloads": { "type": "integer", "description": "Total download count" },
+                        "star_count": { "type": "integer", "description": "Star count" }
+                      }
+                    },
+                    "description": "Search results"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "description": "Number of results returned"
+                  }
+                },
+                "required": ["results", "count"]
+              }
+            },
+            {
+              "name": "plugins__resolve",
+              "description": "Resolve a plugin reference to its manifest and content. Supports local plugins and registry fallback.",
+              "input_schema": {
+                "type": "object",
+                "required": ["reference", "plugin_type"],
+                "properties": {
+                  "reference": {
+                    "type": "string",
+                    "description": "Plugin reference in format [namespace/]name[@version]. Examples: \"genesis\", \"radical/genesis\", \"radical/genesis@1.0.0\""
+                  },
+                  "plugin_type": {
+                    "type": "string",
+                    "enum": ["agent", "persona", "command", "tool", "snippet"],
+                    "description": "Type of plugin to resolve"
+                  }
+                }
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "found": {
+                    "type": "boolean",
+                    "description": "Whether the plugin was successfully resolved"
+                  },
+                  "namespace": {
+                    "type": "string",
+                    "description": "Resolved namespace (null for unnamespaced local plugins)"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Plugin name"
+                  },
+                  "version": {
+                    "type": "string",
+                    "description": "Resolved version (semver string, null if unversioned)"
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": ["local", "registry"],
+                    "description": "Where the plugin was resolved from"
+                  },
+                  "path": {
+                    "type": "string",
+                    "description": "Filesystem path to the resolved plugin (only for local source)"
+                  },
+                  "manifest": {
+                    "type": "object",
+                    "description": "Parsed manifest content (for tools: MCPB manifest.json; for spec-based: parsed metadata)"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "Raw content body (for spec-based plugins, excludes frontmatter)"
+                  }
+                },
+                "required": ["found", "name", "source"]
+              }
+            }
+          ]
+        }
       }
     }
   }

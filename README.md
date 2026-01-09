@@ -50,6 +50,67 @@ Errors are returned as structured MCP errors with error codes, enabling agents t
 }
 ```
 
+## Development
+
+### Prerequisites
+
+- Rust toolchain (1.92.0+)
+- [cross](https://github.com/cross-rs/cross) for Linux cross-compilation
+- Docker (required by cross)
+
+```sh
+# Install cross
+cargo install cross --git https://github.com/cross-rs/cross
+```
+
+### Building
+
+The Makefile supports building for multiple platforms:
+
+| Target | Platform | Method |
+|--------|----------|--------|
+| `darwin-arm64` | macOS ARM64 | Native cargo |
+| `linux-arm64` | Linux ARM64 | cross (Docker) |
+| `linux-x86_64` | Linux x86_64 | cross (Docker) |
+
+**Build commands:**
+
+```sh
+# Build a single server for all platforms
+make build-bash
+
+# Build a single server for a specific platform
+make build-bash-darwin-arm64
+make build-bash-linux-arm64
+make build-bash-linux-x86_64
+
+# Build all servers for all platforms
+make build-all
+
+# Clean dist directories
+make clean
+
+# Clean dist and cargo target directories
+make clean-all
+```
+
+**Output:**
+
+Binaries are placed in each server's `dist/` directory:
+
+```
+core/bash/dist/
+├── bash-darwin-arm64
+├── bash-linux-arm64
+└── bash-linux-x86_64
+```
+
+### Available Servers
+
+```sh
+make help  # Lists all available servers and targets
+```
+
 ## Testing
 
 These MCP servers can be tested using [tool-cli](https://github.com/zerocore-ai/tool-cli).
