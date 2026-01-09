@@ -19,6 +19,5 @@ Thumbs.db
 src/
 Cargo.lock
 
-# Rust build artifacts (ignore everything except release and debug binaries)
-target/**
-!target/release/web
+# Rust build artifacts
+target/

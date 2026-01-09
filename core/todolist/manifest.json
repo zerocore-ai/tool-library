@@ -9,9 +9,15 @@
   },
   "server": {
     "type": "binary",
-    "entry_point": "target/release/todolist",
+    "entry_point": "dist/todolist-linux-x86_64",
     "mcp_config": {
-      "command": "${__dirname}/target/release/todolist"
+      "command": "${__dirname}/dist/todolist-linux-x86_64",
+      "args": [],
+      "env": {},
+      "platform_overrides": {
+        "darwin": { "command": "${__dirname}/dist/todolist-darwin-arm64" },
+        "linux": { "command": "${__dirname}/dist/todolist-linux-x86_64" }
+      }
     }
   },
   "tools": [
@@ -25,12 +31,22 @@
     }
   ],
   "compatibility": {
-    "platforms": ["darwin"]
+    "platforms": ["darwin", "linux"]
   },
   "_meta": {
-    "company.superrad.radical": {
+    "company.superrad.mcpb": {
       "scripts": {
         "build": "cargo build --release"
+      },
+      "mcp_config": {
+        "platform_overrides": {
+          "darwin-arm64": { "command": "${__dirname}/dist/todolist-darwin-arm64" },
+          "linux-arm64": { "command": "${__dirname}/dist/todolist-linux-arm64" },
+          "linux-x86_64": { "command": "${__dirname}/dist/todolist-linux-x86_64" }
+        }
+      },
+      "compatibility": {
+        "platforms": ["darwin-arm64", "linux-arm64", "linux-x86_64"]
       },
       "static_responses": {
         "tools/list": {

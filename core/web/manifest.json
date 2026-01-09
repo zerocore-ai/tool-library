@@ -9,13 +9,18 @@
   },
   "server": {
     "type": "binary",
-    "entry_point": "target/release/web",
+    "entry_point": "dist/web-linux-x86_64",
     "mcp_config": {
-      "command": "${__dirname}/target/release/web",
+      "command": "${__dirname}/dist/web-linux-x86_64",
+      "args": [],
       "env": {
         "BRAVE_SEARCH_API_KEY": "${user_config.brave_api_key}",
         "TAVILY_API_KEY": "${user_config.tavily_api_key}",
         "SERPAPI_API_KEY": "${user_config.serpapi_api_key}"
+      },
+      "platform_overrides": {
+        "darwin": { "command": "${__dirname}/dist/web-darwin-arm64" },
+        "linux": { "command": "${__dirname}/dist/web-linux-x86_64" }
       }
     }
   },
@@ -35,30 +40,43 @@
       "title": "Brave Search API Key",
       "description": "API key for Brave Search (recommended, 2000 free queries/month). Get one at https://brave.com/search/api/",
       "required": false,
-      "sensitive": true
+      "sensitive": true,
+      "default": ""
     },
     "tavily_api_key": {
       "type": "string",
       "title": "Tavily API Key",
       "description": "API key for Tavily Search (1000 free queries/month). Get one at https://tavily.com/",
       "required": false,
-      "sensitive": true
+      "sensitive": true,
+      "default": ""
     },
     "serpapi_api_key": {
       "type": "string",
       "title": "SerpAPI Key",
       "description": "API key for SerpAPI/Google Search (100 free queries/month). Get one at https://serpapi.com/",
       "required": false,
-      "sensitive": true
+      "sensitive": true,
+      "default": ""
     }
   },
   "compatibility": {
-    "platforms": ["darwin"]
+    "platforms": ["darwin", "linux"]
   },
   "_meta": {
-    "company.superrad.radical": {
+    "company.superrad.mcpb": {
       "scripts": {
         "build": "cargo build --release"
+      },
+      "mcp_config": {
+        "platform_overrides": {
+          "darwin-arm64": { "command": "${__dirname}/dist/web-darwin-arm64" },
+          "linux-arm64": { "command": "${__dirname}/dist/web-linux-arm64" },
+          "linux-x86_64": { "command": "${__dirname}/dist/web-linux-x86_64" }
+        }
+      },
+      "compatibility": {
+        "platforms": ["darwin-arm64", "linux-arm64", "linux-x86_64"]
       },
       "static_responses": {
         "tools/list": {

@@ -9,9 +9,15 @@
   },
   "server": {
     "type": "binary",
-    "entry_point": "target/release/elicitation",
+    "entry_point": "dist/elicitation-linux-x86_64",
     "mcp_config": {
-      "command": "${__dirname}/target/release/elicitation"
+      "command": "${__dirname}/dist/elicitation-linux-x86_64",
+      "args": [],
+      "env": {},
+      "platform_overrides": {
+        "darwin": { "command": "${__dirname}/dist/elicitation-darwin-arm64" },
+        "linux": { "command": "${__dirname}/dist/elicitation-linux-x86_64" }
+      }
     }
   },
   "tools": [
@@ -21,12 +27,22 @@
     }
   ],
   "compatibility": {
-    "platforms": ["darwin"]
+    "platforms": ["darwin", "linux"]
   },
   "_meta": {
-    "company.superrad.radical": {
+    "company.superrad.mcpb": {
       "scripts": {
         "build": "cargo build --release"
+      },
+      "mcp_config": {
+        "platform_overrides": {
+          "darwin-arm64": { "command": "${__dirname}/dist/elicitation-darwin-arm64" },
+          "linux-arm64": { "command": "${__dirname}/dist/elicitation-linux-arm64" },
+          "linux-x86_64": { "command": "${__dirname}/dist/elicitation-linux-x86_64" }
+        }
+      },
+      "compatibility": {
+        "platforms": ["darwin-arm64", "linux-arm64", "linux-x86_64"]
       },
       "static_responses": {
         "tools/list": {

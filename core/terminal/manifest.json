@@ -1,6 +1,7 @@
 {
   "manifest_version": "0.3",
   "name": "terminal",
+  "display_name": "Terminal MCP",
   "version": "0.1.0",
   "description": "An MCP server providing PTY-based terminal sessions with full terminal emulation for interactive applications",
   "author": {
@@ -8,285 +9,34 @@
   },
   "server": {
     "type": "binary",
-    "entry_point": "target/release/terminal",
+    "entry_point": "dist/terminal-linux-x86_64",
     "mcp_config": {
-      "command": "${__dirname}/target/release/terminal"
+      "command": "${__dirname}/dist/terminal-linux-x86_64",
+      "args": [],
+      "env": {},
+      "platform_overrides": {
+        "darwin": { "command": "${__dirname}/dist/terminal-darwin-arm64" },
+        "linux": { "command": "${__dirname}/dist/terminal-linux-x86_64" }
+      }
     }
-  },
-  "compatibility": {
-    "platforms": ["darwin"]
   },
   "tools": [
-    {
-      "name": "terminal__create",
-      "description": "Create a new terminal session running any program (shell by default). Returns a session_id for subsequent operations.",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "program": {
-            "type": "string",
-            "description": "Program to run (default: $SHELL or /bin/bash)"
-          },
-          "args": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Program arguments"
-          },
-          "rows": {
-            "type": "integer",
-            "description": "Terminal height in rows (default: 24)"
-          },
-          "cols": {
-            "type": "integer",
-            "description": "Terminal width in columns (default: 80)"
-          },
-          "env": {
-            "type": "object",
-            "additionalProperties": { "type": "string" },
-            "description": "Additional environment variables"
-          },
-          "cwd": {
-            "type": "string",
-            "description": "Working directory"
-          },
-          "wait_ready": {
-            "type": "boolean",
-            "description": "Wait for shell prompt before returning (default: true for shells)"
-          },
-          "ready_timeout_ms": {
-            "type": "integer",
-            "description": "Timeout for wait_ready in milliseconds (default: 5000)"
-          }
-        }
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "session_id": { "type": "string" },
-          "pid": { "type": "integer" },
-          "program": { "type": "string" },
-          "dimensions": {
-            "type": "object",
-            "properties": {
-              "rows": { "type": "integer" },
-              "cols": { "type": "integer" }
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "terminal__destroy",
-      "description": "Terminate a terminal session and clean up resources.",
-      "input_schema": {
-        "type": "object",
-        "required": ["session_id"],
-        "properties": {
-          "session_id": {
-            "type": "string",
-            "description": "Session ID to destroy"
-          },
-          "force": {
-            "type": "boolean",
-            "description": "Force kill (SIGKILL) instead of graceful termination (SIGTERM)"
-          }
-        }
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "destroyed": { "type": "boolean" },
-          "exit_code": { "type": "integer" }
-        }
-      }
-    },
-    {
-      "name": "terminal__list",
-      "description": "List all active terminal sessions.",
-      "input_schema": {
-        "type": "object",
-        "properties": {}
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "sessions": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "session_id": { "type": "string" },
-                "program": { "type": "string" },
-                "args": { "type": "array", "items": { "type": "string" } },
-                "pid": { "type": "integer" },
-                "created_at": { "type": "string" },
-                "dimensions": { "type": "object" },
-                "exited": { "type": "boolean" },
-                "exit_code": { "type": "integer" },
-                "healthy": { "type": "boolean" }
-              }
-            }
-          },
-          "count": { "type": "integer" }
-        }
-      }
-    },
-    {
-      "name": "terminal__send",
-      "description": "Send input (text or special keys) to a terminal session. Optionally read output after sending.",
-      "input_schema": {
-        "type": "object",
-        "required": ["session_id"],
-        "properties": {
-          "session_id": {
-            "type": "string",
-            "description": "Session ID to send input to"
-          },
-          "text": {
-            "type": "string",
-            "description": "Text to send"
-          },
-          "key": {
-            "type": "string",
-            "enum": ["up", "down", "left", "right", "home", "end", "pageup", "pagedown", "backspace", "delete", "insert", "tab", "enter", "escape", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12"],
-            "description": "Special key to send"
-          },
-          "ctrl": {
-            "type": "boolean",
-            "description": "Ctrl modifier"
-          },
-          "alt": {
-            "type": "boolean",
-            "description": "Alt modifier"
-          },
-          "shift": {
-            "type": "boolean",
-            "description": "Shift modifier"
-          },
-          "bracketed_paste": {
-            "type": "string",
-            "enum": ["auto", "always", "never"],
-            "description": "Bracketed paste mode"
-          },
-          "read": {
-            "type": "object",
-            "description": "Optional: read output after sending",
-            "properties": {
-              "view": { "type": "string", "enum": ["screen", "new", "scrollback"] },
-              "format": { "type": "string", "enum": ["plain", "raw"] },
-              "timeout_ms": { "type": "integer" },
-              "wait_idle_ms": { "type": "integer" },
-              "wait_for_prompt": { "type": "boolean" }
-            }
-          }
-        }
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "sent": { "type": "boolean" },
-          "read_result": { "type": "object" }
-        }
-      }
-    },
-    {
-      "name": "terminal__read",
-      "description": "Read output from a terminal session. Supports screen view (TUI), new output (commands), and scrollback (history).",
-      "input_schema": {
-        "type": "object",
-        "required": ["session_id"],
-        "properties": {
-          "session_id": {
-            "type": "string",
-            "description": "Session ID to read from"
-          },
-          "view": {
-            "type": "string",
-            "enum": ["screen", "new", "scrollback"],
-            "description": "View mode: screen (visible buffer), new (since last read), scrollback (history)"
-          },
-          "format": {
-            "type": "string",
-            "enum": ["plain", "raw"],
-            "description": "Output format: plain (no ANSI) or raw (with ANSI)"
-          },
-          "timeout_ms": {
-            "type": "integer",
-            "description": "Maximum wait time in milliseconds"
-          },
-          "wait_idle_ms": {
-            "type": "integer",
-            "description": "Wait until no output for N milliseconds"
-          },
-          "wait_for_prompt": {
-            "type": "boolean",
-            "description": "Wait for shell prompt"
-          },
-          "offset": {
-            "type": "integer",
-            "description": "Pagination offset for scrollback (0 = most recent)"
-          },
-          "limit": {
-            "type": "integer",
-            "description": "Pagination limit for scrollback"
-          }
-        }
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "content": { "type": "string" },
-          "lines": { "type": "integer" },
-          "cursor": { "type": "object" },
-          "dimensions": { "type": "object" },
-          "has_new_content": { "type": "boolean" },
-          "prompt_detected": { "type": "boolean" },
-          "idle": { "type": "boolean" },
-          "exited": { "type": "boolean" },
-          "exit_code": { "type": "integer" }
-        }
-      }
-    },
-    {
-      "name": "terminal__info",
-      "description": "Get information about a terminal session without reading content.",
-      "input_schema": {
-        "type": "object",
-        "required": ["session_id"],
-        "properties": {
-          "session_id": {
-            "type": "string",
-            "description": "Session ID to get info for"
-          }
-        }
-      },
-      "output_schema": {
-        "type": "object",
-        "properties": {
-          "session_id": { "type": "string" },
-          "program": { "type": "string" },
-          "args": { "type": "array", "items": { "type": "string" } },
-          "pid": { "type": "integer" },
-          "created_at": { "type": "string" },
-          "cursor": { "type": "object" },
-          "dimensions": { "type": "object" },
-          "exited": { "type": "boolean" },
-          "exit_code": { "type": "integer" },
-          "healthy": { "type": "boolean" },
-          "cwd": { "type": "string" }
-        }
-      }
-    }
+    { "name": "terminal__create", "description": "Create a new terminal session running any program (shell by default)" },
+    { "name": "terminal__destroy", "description": "Terminate a terminal session and clean up resources" },
+    { "name": "terminal__list", "description": "List all active terminal sessions" },
+    { "name": "terminal__send", "description": "Send input (text or special keys) to a terminal session" },
+    { "name": "terminal__read", "description": "Read output from a terminal session" },
+    { "name": "terminal__info", "description": "Get information about a terminal session without reading content" }
   ],
   "user_config": {
     "default_rows": {
-      "type": "integer",
+      "type": "number",
       "title": "Default Terminal Rows",
       "description": "Default number of rows for new sessions (default: 24)",
       "default": 24
     },
     "default_cols": {
-      "type": "integer",
+      "type": "number",
       "title": "Default Terminal Columns",
       "description": "Default number of columns for new sessions (default: 80)",
       "default": 80
@@ -303,7 +53,7 @@
       "default": "xterm-256color"
     },
     "scrollback_limit": {
-      "type": "integer",
+      "type": "number",
       "title": "Scrollback Limit",
       "description": "Maximum lines to keep in scrollback per session (default: 10000)",
       "default": 10000
@@ -315,16 +65,295 @@
       "default": "\\$\\s*$|#\\s*$|>\\s*$"
     },
     "max_sessions": {
-      "type": "integer",
+      "type": "number",
       "title": "Maximum Sessions",
       "description": "Maximum number of concurrent sessions (default: 10)",
       "default": 10
     }
   },
+  "compatibility": {
+    "platforms": ["darwin", "linux"]
+  },
   "_meta": {
-    "company.superrad.radical": {
+    "company.superrad.mcpb": {
       "scripts": {
         "build": "cargo build --release"
+      },
+      "mcp_config": {
+        "platform_overrides": {
+          "darwin-arm64": { "command": "${__dirname}/dist/terminal-darwin-arm64" },
+          "linux-arm64": { "command": "${__dirname}/dist/terminal-linux-arm64" },
+          "linux-x86_64": { "command": "${__dirname}/dist/terminal-linux-x86_64" }
+        }
+      },
+      "compatibility": {
+        "platforms": ["darwin-arm64", "linux-arm64", "linux-x86_64"]
+      },
+      "static_responses": {
+        "tools/list": {
+          "tools": [
+            {
+              "name": "terminal__create",
+              "description": "Create a new terminal session running any program (shell by default). Returns a session_id for subsequent operations.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "program": {
+                    "type": "string",
+                    "description": "Program to run (default: $SHELL or /bin/bash)"
+                  },
+                  "args": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Program arguments"
+                  },
+                  "rows": {
+                    "type": "integer",
+                    "description": "Terminal height in rows (default: 24)"
+                  },
+                  "cols": {
+                    "type": "integer",
+                    "description": "Terminal width in columns (default: 80)"
+                  },
+                  "env": {
+                    "type": "object",
+                    "additionalProperties": { "type": "string" },
+                    "description": "Additional environment variables"
+                  },
+                  "cwd": {
+                    "type": "string",
+                    "description": "Working directory"
+                  },
+                  "wait_ready": {
+                    "type": "boolean",
+                    "description": "Wait for shell prompt before returning (default: true for shells)"
+                  },
+                  "ready_timeout_ms": {
+                    "type": "integer",
+                    "description": "Timeout for wait_ready in milliseconds (default: 5000)"
+                  }
+                }
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "session_id": { "type": "string" },
+                  "pid": { "type": "integer" },
+                  "program": { "type": "string" },
+                  "dimensions": {
+                    "type": "object",
+                    "properties": {
+                      "rows": { "type": "integer" },
+                      "cols": { "type": "integer" }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "terminal__destroy",
+              "description": "Terminate a terminal session and clean up resources.",
+              "input_schema": {
+                "type": "object",
+                "required": ["session_id"],
+                "properties": {
+                  "session_id": {
+                    "type": "string",
+                    "description": "Session ID to destroy"
+                  },
+                  "force": {
+                    "type": "boolean",
+                    "description": "Force kill (SIGKILL) instead of graceful termination (SIGTERM)"
+                  }
+                }
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "destroyed": { "type": "boolean" },
+                  "exit_code": { "type": "integer" }
+                }
+              }
+            },
+            {
+              "name": "terminal__list",
+              "description": "List all active terminal sessions.",
+              "input_schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "sessions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "session_id": { "type": "string" },
+                        "program": { "type": "string" },
+                        "args": { "type": "array", "items": { "type": "string" } },
+                        "pid": { "type": "integer" },
+                        "created_at": { "type": "string" },
+                        "dimensions": { "type": "object" },
+                        "exited": { "type": "boolean" },
+                        "exit_code": { "type": "integer" },
+                        "healthy": { "type": "boolean" }
+                      }
+                    }
+                  },
+                  "count": { "type": "integer" }
+                }
+              }
+            },
+            {
+              "name": "terminal__send",
+              "description": "Send input (text or special keys) to a terminal session. Optionally read output after sending.",
+              "input_schema": {
+                "type": "object",
+                "required": ["session_id"],
+                "properties": {
+                  "session_id": {
+                    "type": "string",
+                    "description": "Session ID to send input to"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Text to send"
+                  },
+                  "key": {
+                    "type": "string",
+                    "enum": ["up", "down", "left", "right", "home", "end", "pageup", "pagedown", "backspace", "delete", "insert", "tab", "enter", "escape", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12"],
+                    "description": "Special key to send"
+                  },
+                  "ctrl": {
+                    "type": "boolean",
+                    "description": "Ctrl modifier"
+                  },
+                  "alt": {
+                    "type": "boolean",
+                    "description": "Alt modifier"
+                  },
+                  "shift": {
+                    "type": "boolean",
+                    "description": "Shift modifier"
+                  },
+                  "bracketed_paste": {
+                    "type": "string",
+                    "enum": ["auto", "always", "never"],
+                    "description": "Bracketed paste mode"
+                  },
+                  "read": {
+                    "type": "object",
+                    "description": "Optional: read output after sending",
+                    "properties": {
+                      "view": { "type": "string", "enum": ["screen", "new", "scrollback"] },
+                      "format": { "type": "string", "enum": ["plain", "raw"] },
+                      "timeout_ms": { "type": "integer" },
+                      "wait_idle_ms": { "type": "integer" },
+                      "wait_for_prompt": { "type": "boolean" }
+                    }
+                  }
+                }
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "sent": { "type": "boolean" },
+                  "read_result": { "type": "object" }
+                }
+              }
+            },
+            {
+              "name": "terminal__read",
+              "description": "Read output from a terminal session. Supports screen view (TUI), new output (commands), and scrollback (history).",
+              "input_schema": {
+                "type": "object",
+                "required": ["session_id"],
+                "properties": {
+                  "session_id": {
+                    "type": "string",
+                    "description": "Session ID to read from"
+                  },
+                  "view": {
+                    "type": "string",
+                    "enum": ["screen", "new", "scrollback"],
+                    "description": "View mode: screen (visible buffer), new (since last read), scrollback (history)"
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": ["plain", "raw"],
+                    "description": "Output format: plain (no ANSI) or raw (with ANSI)"
+                  },
+                  "timeout_ms": {
+                    "type": "integer",
+                    "description": "Maximum wait time in milliseconds"
+                  },
+                  "wait_idle_ms": {
+                    "type": "integer",
+                    "description": "Wait until no output for N milliseconds"
+                  },
+                  "wait_for_prompt": {
+                    "type": "boolean",
+                    "description": "Wait for shell prompt"
+                  },
+                  "offset": {
+                    "type": "integer",
+                    "description": "Pagination offset for scrollback (0 = most recent)"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "description": "Pagination limit for scrollback"
+                  }
+                }
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "content": { "type": "string" },
+                  "lines": { "type": "integer" },
+                  "cursor": { "type": "object" },
+                  "dimensions": { "type": "object" },
+                  "has_new_content": { "type": "boolean" },
+                  "prompt_detected": { "type": "boolean" },
+                  "idle": { "type": "boolean" },
+                  "exited": { "type": "boolean" },
+                  "exit_code": { "type": "integer" }
+                }
+              }
+            },
+            {
+              "name": "terminal__info",
+              "description": "Get information about a terminal session without reading content.",
+              "input_schema": {
+                "type": "object",
+                "required": ["session_id"],
+                "properties": {
+                  "session_id": {
+                    "type": "string",
+                    "description": "Session ID to get info for"
+                  }
+                }
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "session_id": { "type": "string" },
+                  "program": { "type": "string" },
+                  "args": { "type": "array", "items": { "type": "string" } },
+                  "pid": { "type": "integer" },
+                  "created_at": { "type": "string" },
+                  "cursor": { "type": "object" },
+                  "dimensions": { "type": "object" },
+                  "exited": { "type": "boolean" },
+                  "exit_code": { "type": "integer" },
+                  "healthy": { "type": "boolean" },
+                  "cwd": { "type": "string" }
+                }
+              }
+            }
+          ]
+        }
       }
     }
   }
