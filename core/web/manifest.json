@@ -64,7 +64,7 @@
     "platforms": ["darwin", "linux"]
   },
   "_meta": {
-    "company.superrad.mcpb": {
+    "store.tool.mcpb": {
       "scripts": {
         "build": "cargo build --release"
       },
