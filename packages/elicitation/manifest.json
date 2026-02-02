@@ -4,6 +4,7 @@
   "display_name": "Elicitation MCP",
   "version": "0.1.0",
   "description": "User input elicitation for AI agents via structured questions",
+  "icon": "icon.png",
   "author": {
     "name": "Stephen Akinyemi"
   },

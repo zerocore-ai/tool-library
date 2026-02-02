@@ -47,16 +47,16 @@ check-cross:
 
 # Build a single server for a single target
 # Usage: $(call build-server,<server>,<target>)
-# Output: core/<server>/dist/<server>-<target>
+# Output: packages/<server>/dist/<server>-<target>
 define build-server
 	@echo "Building $(1) for $(2)..."
-	@mkdir -p core/$(1)/dist
+	@mkdir -p packages/$(1)/dist
 	$(if $(filter $(2),$(NATIVE_TARGET)), \
-		cd core/$(1) && cargo build --release --target $(TARGET_$(2)), \
-		cd core/$(1) && cross build --release --target $(TARGET_$(2)) \
+		cd packages/$(1) && cargo build --release --target $(TARGET_$(2)), \
+		cd packages/$(1) && cross build --release --target $(TARGET_$(2)) \
 	)
-	@cp core/$(1)/target/$(TARGET_$(2))/release/$(1) core/$(1)/dist/$(1)-$(2)
-	@echo "Built: core/$(1)/dist/$(1)-$(2)"
+	@cp packages/$(1)/target/$(TARGET_$(2))/release/$(1) packages/$(1)/dist/$(1)-$(2)
+	@echo "Built: packages/$(1)/dist/$(1)-$(2)"
 endef
 
 # -----------------------------------------------------------------------------
@@ -93,12 +93,12 @@ build: build-all
 # -----------------------------------------------------------------------------
 clean:
 	@echo "Cleaning dist directories..."
-	@$(foreach s,$(SERVERS),rm -rf core/$(s)/dist;)
+	@$(foreach s,$(SERVERS),rm -rf packages/$(s)/dist;)
 	@echo "Clean complete"
 
 clean-all: clean
 	@echo "Cleaning cargo target directories..."
-	@$(foreach s,$(SERVERS),cd core/$(s) && cargo clean;)
+	@$(foreach s,$(SERVERS),cd packages/$(s) && cargo clean;)
 	@echo "Full clean complete"
 
 # -----------------------------------------------------------------------------

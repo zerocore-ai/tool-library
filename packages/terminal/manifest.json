@@ -4,6 +4,7 @@
   "display_name": "Terminal MCP",
   "version": "0.1.0",
   "description": "An MCP server providing PTY-based terminal sessions with full terminal emulation for interactive applications",
+  "icon": "icon.png",
   "author": {
     "name": "Stephen Akinyemi"
   },
