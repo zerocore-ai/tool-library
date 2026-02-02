@@ -97,7 +97,7 @@ struct ApiArtifactSummary {
     namespace: String,
     name: String,
     description: Option<String>,
-    plugin_type: String,
+    artifact_type: String,
     #[serde(default)]
     total_downloads: i64,
     #[serde(default)]
@@ -131,7 +131,7 @@ pub async fn handle_search(params: Parameters<SearchInput>) -> Result<Json<Searc
             PluginType::Snippet => "snippet",
             PluginType::Pack => "pack",
         };
-        url.push_str(&format!("&plugin_type={}", type_str));
+        url.push_str(&format!("&artifact_type={}", type_str));
     }
 
     let client = reqwest::Client::new();
@@ -163,7 +163,7 @@ pub async fn handle_search(params: Parameters<SearchInput>) -> Result<Json<Searc
             namespace: item.artifact.namespace,
             name: item.artifact.name,
             description: item.artifact.description,
-            plugin_type: item.artifact.plugin_type,
+            plugin_type: item.artifact.artifact_type,
             latest_version: item.artifact.latest_version,
             total_downloads: item.artifact.total_downloads,
             star_count: item.artifact.star_count,

@@ -4,6 +4,7 @@
   "display_name": "System MCP",
   "version": "0.1.0",
   "description": "System utilities for AI agents (sleep, datetime, random)",
+  "icon": "icon.png",
   "author": {
     "name": "Stephen Akinyemi"
   },

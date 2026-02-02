@@ -4,6 +4,7 @@
   "display_name": "Bash MCP",
   "version": "0.1.0",
   "description": "An MCP server for executing shell commands with configurable timeout and structured output.",
+  "icon": "icon.png",
   "author": {
     "name": "Stephen Akinyemi"
   },
@@ -102,7 +103,14 @@
                     "description": "Actual execution duration in milliseconds."
                   }
                 },
-                "required": ["stdout", "stderr", "exit_code", "stdout_truncated", "stderr_truncated", "duration_ms"]
+                "required": [
+                  "stdout",
+                  "stderr",
+                  "exit_code",
+                  "stdout_truncated",
+                  "stderr_truncated",
+                  "duration_ms"
+                ]
               }
             }
           ]

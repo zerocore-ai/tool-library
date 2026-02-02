@@ -4,6 +4,7 @@
   "display_name": "Plugins MCP",
   "version": "0.1.0",
   "description": "Plugin registry search and resolution for AI agents",
+  "icon": "icon.png",
   "author": {
     "name": "Stephen Akinyemi"
   },

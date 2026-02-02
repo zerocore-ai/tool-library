@@ -4,6 +4,7 @@
   "display_name": "Todolist MCP",
   "version": "0.1.0",
   "description": "Session-scoped task tracking for AI agents",
+  "icon": "icon.png",
   "author": {
     "name": "Stephen Akinyemi"
   },

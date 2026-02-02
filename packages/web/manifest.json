@@ -4,6 +4,7 @@
   "display_name": "Web MCP",
   "version": "0.1.0",
   "description": "Web fetch and search tools for AI agents",
+  "icon": "icon.png",
   "author": {
     "name": "Stephen Akinyemi"
   },
@@ -126,7 +127,13 @@
                     "description": "Whether the content was truncated due to max_length"
                   }
                 },
-                "required": ["content", "final_url", "status", "content_type", "truncated"]
+                "required": [
+                  "content",
+                  "final_url",
+                  "status",
+                  "content_type",
+                  "truncated"
+                ]
               }
             },
             {
@@ -164,9 +171,18 @@
                     "items": {
                       "type": "object",
                       "properties": {
-                        "title": { "type": "string", "description": "Result title" },
-                        "url": { "type": "string", "description": "Result URL" },
-                        "snippet": { "type": "string", "description": "Result snippet/description" }
+                        "title": {
+                          "type": "string",
+                          "description": "Result title"
+                        },
+                        "url": {
+                          "type": "string",
+                          "description": "Result URL"
+                        },
+                        "snippet": {
+                          "type": "string",
+                          "description": "Result snippet/description"
+                        }
                       },
                       "required": ["title", "url", "snippet"]
                     },

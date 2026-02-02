@@ -99,7 +99,7 @@ make clean-all
 Binaries are placed in each server's `dist/` directory:
 
 ```
-core/bash/dist/
+packages/bash/dist/
 ├── bash-darwin-arm64
 ├── bash-linux-arm64
 └── bash-linux-x86_64
@@ -126,42 +126,42 @@ curl -fsSL https://raw.githubusercontent.com/zerocore-ai/tool-cli/main/install.s
 **Inspect server capabilities:**
 
 ```sh
-tool info ./core/system          # Show tools, prompts, resources
-tool info ./core/system --tools  # Show only tools
-tool info ./core/system --json   # Output as JSON
+tool info ./packages/system          # Show tools, prompts, resources
+tool info ./packages/system --tools  # Show only tools
+tool info ./packages/system --json   # Output as JSON
 ```
 
 **Call a tool method:**
 
 ```sh
 # System tools
-tool call ./core/system -m system__get_datetime
-tool call ./core/system -m system__sleep -p duration_ms=1000
-tool call ./core/system -m system__get_random_integer -p min=1 -p max=100
+tool call ./packages/system -m system__get_datetime
+tool call ./packages/system -m system__sleep -p duration_ms=1000
+tool call ./packages/system -m system__get_random_integer -p min=1 -p max=100
 
 # Filesystem tools
-tool call ./core/filesystem -m filesystem__glob -p pattern="**/*.rs"
-tool call ./core/filesystem -m filesystem__read -p path="./README.md"
+tool call ./packages/filesystem -m filesystem__glob -p pattern="**/*.rs"
+tool call ./packages/filesystem -m filesystem__read -p path="./README.md"
 
 # Bash tool
-tool call ./core/bash -m bash__exec -p command="echo hello"
+tool call ./packages/bash -m bash__exec -p command="echo hello"
 
 # Todolist tools
-tool call ./core/todolist -m todolist__get
-tool call ./core/todolist -m todolist__set -p todos='[{"content":"Test task","status":"pending"}]'
+tool call ./packages/todolist -m todolist__get
+tool call ./packages/todolist -m todolist__set -p todos='[{"content":"Test task","status":"pending"}]'
 ```
 
 **Verbose mode (see MCP protocol messages):**
 
 ```sh
-tool call ./core/system -m system__get_datetime --verbose
+tool call ./packages/system -m system__get_datetime --verbose
 ```
 
 **Validate manifest:**
 
 ```sh
-tool validate ./core/system
-tool validate ./core/system --strict  # Treat warnings as errors
+tool validate ./packages/system
+tool validate ./packages/system --strict  # Treat warnings as errors
 ```
 
 ## License
