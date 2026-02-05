@@ -1,0 +1,42 @@
+{
+  "manifest_version": "0.3",
+  "name": "mongodb",
+  "version": "0.1.0",
+  "description": "A Model Context Protocol server for interacting with MongoDB Databases and MongoDB Atlas.",
+  "icon": "icon.png",
+  "author": {
+    "name": "Stephen Akinyemi"
+  },
+  "server": {
+    "mcp_config": {
+      "command": "npx",
+      "args": [
+        "mongodb-mcp-server@latest"
+      ],
+      "env": {
+        "MDB_MCP_CONNECTION_STRING": "${default(user_config.connection_string, '')}",
+        "MDB_MCP_API_CLIENT_ID": "${default(user_config.api_client_id, '')}",
+        "MDB_MCP_API_CLIENT_SECRET": "${default(user_config.api_client_secret, '')}"
+      }
+    }
+  },
+  "user_config": {
+    "connection_string": {
+      "type": "string",
+      "title": "MongoDB Connection String",
+      "description": "Use a connection string (e.g. mongodb+srv://...) OR provide API Client ID/Secret below. Leave blank if using API credentials.",
+      "sensitive": true
+    },
+    "api_client_id": {
+      "type": "string",
+      "title": "MongoDB API Client ID",
+      "description": "Atlas API client ID. Leave blank if using a connection string instead."
+    },
+    "api_client_secret": {
+      "type": "string",
+      "title": "MongoDB API Client Secret",
+      "description": "Atlas API client secret. Leave blank if using a connection string instead.",
+      "sensitive": true
+    }
+  }
+}

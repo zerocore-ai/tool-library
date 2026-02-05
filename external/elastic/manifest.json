@@ -1,0 +1,35 @@
+{
+  "manifest_version": "0.3",
+  "name": "elastic",
+  "version": "0.1.0",
+  "description": "An MCP server",
+  "icon": "icon.png",
+  "author": {
+    "name": "Stephen Akinyemi"
+  },
+  "server": {
+    "transport": "http",
+    "mcp_config": {
+      "url": "${user_config.kibana_url}/api/agent_builder/mcp",
+      "headers": {
+        "Authorization": "ApiKey ${user_config.api_key}"
+      }
+    }
+  },
+  "user_config": {
+    "kibana_url": {
+      "type": "string",
+      "title": "Kibana URL",
+      "description": "Base URL for your Kibana instance (e.g. http://localhost:5601 or https://kibana.example.com).",
+      "default": "http://localhost:5601",
+      "required": true
+    },
+    "api_key": {
+      "type": "string",
+      "title": "Kibana API Key",
+      "description": "API key value used for the Authorization header (without the 'ApiKey ' prefix).",
+      "required": true,
+      "sensitive": true
+    }
+  }
+}
