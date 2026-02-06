@@ -33,6 +33,7 @@ coverage/
 tmp/
 temp/
 ignore/
+**/.out/
 
 # Symbolic links
 rig

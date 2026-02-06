@@ -1,0 +1,225 @@
+name: "\U0001F4E6 | Release vendor tools"
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "20.x"
+  TOOL_CLI_VERSION: "latest"
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-24.04
+    outputs:
+      build_matrix: ${{ steps.plan.outputs.build_matrix }}
+      dist_matrix: ${{ steps.plan.outputs.dist_matrix }}
+      dist_enabled: ${{ steps.plan.outputs.dist_enabled }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Plan matrix
+        id: plan
+        run: node .github/scripts/plan-vendor-release.mjs
+
+  dist:
+    name: Dist (${{ matrix.vendor }})
+    needs: plan
+    if: needs.plan.outputs.dist_enabled == 'true'
+    runs-on: ${{ matrix.runs_on }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.dist_matrix) }}
+    steps:
+      - name: Checkout (no submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            vendor/**/package-lock.json
+
+      - name: Enable Corepack (yarn/pnpm)
+        shell: bash
+        run: |
+          set -euo pipefail
+          corepack enable
+          corepack prepare yarn@1.22.22 --activate
+          corepack prepare pnpm@9.15.6 --activate
+
+      - name: Init upstream submodule (if present)
+        shell: bash
+        run: |
+          set -euo pipefail
+          UPSTREAM_PATH="vendor/${{ matrix.vendor }}/upstream"
+          if git config -f .gitmodules --get-regexp '^submodule\\..*\\.path$' | awk '{print $2}' | grep -Fxq "$UPSTREAM_PATH"; then
+            git submodule update --init --recursive "$UPSTREAM_PATH"
+          else
+            echo "No upstream submodule configured for $UPSTREAM_PATH; skipping."
+          fi
+
+      - name: Build upstream dist (skip runtime deps)
+        shell: bash
+        env:
+          MCPB_SKIP_RUNTIME_DEPS: "1"
+        run: |
+          set -euo pipefail
+          if [ -f "vendor/${{ matrix.vendor }}/scripts/build-bundle.mjs" ]; then
+            (cd "vendor/${{ matrix.vendor }}" && node "scripts/build-bundle.mjs")
+          else
+            echo "No build script for vendor/${{ matrix.vendor }}; skipping dist build."
+          fi
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.vendor }}
+          if-no-files-found: error
+          path: |
+            vendor/${{ matrix.vendor }}/server/**/dist/**
+
+  build:
+    name: Build (${{ matrix.vendor }} / ${{ matrix.target }})
+    needs: [plan, dist]
+    runs-on: ${{ matrix.runs_on }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.build_matrix) }}
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout (no submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            vendor/${{ matrix.vendor }}/package-lock.json
+
+      - name: Enable Corepack (yarn/pnpm)
+        shell: bash
+        run: corepack enable
+
+      - name: Download upstream dist
+        if: matrix.needs_dist == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-${{ matrix.vendor }}
+          path: .
+
+      - name: Install runtime deps (npm ci)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f "vendor/${{ matrix.vendor }}/package.json" ]; then
+            (cd "vendor/${{ matrix.vendor }}" && npm ci ${{ matrix.npm_ci_args }})
+          else
+            echo "No package.json for vendor/${{ matrix.vendor }}; skipping npm ci."
+          fi
+
+      - name: Install tool-cli (prebuilt, with source fallback)
+        id: install_tool
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL "https://raw.githubusercontent.com/zerocore-ai/tool-cli/main/install.sh" | sh -s -- \
+            --version="${TOOL_CLI_VERSION}" \
+            --prefix="$HOME/.local" \
+            --force \
+            --no-modify-path
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          tool --version
+
+      - name: Setup Rust (tool-cli fallback)
+        if: steps.install_tool.outcome != 'success'
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install tool-cli from source (fallback)
+        if: steps.install_tool.outcome != 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo install --git "https://github.com/zerocore-ai/tool-cli" --locked --force
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          tool --version
+
+      - name: Pack bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          (cd "vendor/${{ matrix.vendor }}" && rm -f ./*.mcpb ./*.mcpbx)
+          (cd "vendor/${{ matrix.vendor }}" && tool pack)
+          BUNDLE="$(
+            cd "vendor/${{ matrix.vendor }}"
+            shopt -s nullglob
+            bundles=(./*.mcpb ./*.mcpbx)
+            if [ "${#bundles[@]}" -ne 1 ]; then
+              echo "Expected 1 bundle, found ${#bundles[@]}" >&2
+              printf '%s\n' "${bundles[@]}" >&2 || true
+              exit 1
+            fi
+            printf '%s\n' "${bundles[0]}"
+          )"
+          FILENAME="$(basename "$BUNDLE")"
+          EXT="${FILENAME##*.}"
+          BASE="${FILENAME%.*}"
+          OUT="dist/${BASE}-${{ matrix.target }}.${EXT}"
+          mv "vendor/${{ matrix.vendor }}/${FILENAME}" "$OUT"
+          node -e "const fs=require('fs');const crypto=require('crypto');const path=require('path');const p=process.argv[1];const d=fs.readFileSync(p);const h=crypto.createHash('sha256').update(d).digest('hex');fs.writeFileSync(p+'.sha256', h+'  '+path.basename(p)+'\\n');" "$OUT"
+          echo "Created: $OUT"
+
+      - name: Upload bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-${{ matrix.vendor }}-${{ matrix.target }}
+          path: |
+            dist/*.mcpb
+            dist/*.mcpbx
+            dist/*.sha256
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download all bundle artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: bundle-*
+          merge-multiple: true
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Vendor tools ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            artifacts/*.mcpb
+            artifacts/*.mcpbx
+            artifacts/*.sha256

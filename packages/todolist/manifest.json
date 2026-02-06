@@ -5,6 +5,7 @@
   "version": "0.1.0",
   "description": "Session-scoped task tracking for AI agents",
   "icon": "icon.png",
+  "license": "Apache-2.0",
   "author": {
     "name": "Stephen Akinyemi"
   },

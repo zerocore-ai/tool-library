@@ -5,6 +5,7 @@
   "version": "0.1.0",
   "description": "File system operations for AI agents (read, write, edit, glob, grep)",
   "icon": "icon.png",
+  "license": "Apache-2.0",
   "author": {
     "name": "Stephen Akinyemi"
   },
