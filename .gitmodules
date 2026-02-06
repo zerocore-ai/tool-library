@@ -1,0 +1,6 @@
+[submodule "vendor/monday/upstream"]
+	path = vendor/monday/upstream
+	url = https://github.com/mondaycom/mcp
+[submodule "vendor/mongodb/upstream"]
+	path = vendor/mongodb/upstream
+	url = https://github.com/mongodb-js/mongodb-mcp-server

@@ -3,9 +3,13 @@
   "name": "elastic",
   "version": "0.1.1",
   "description": "An MCP server for Elastic Search, Kibana, and Elastic Security",
+  "license": "Apache-2.0",
   "icon": "icon.png",
   "author": {
     "name": "Stephen Akinyemi"
+  },
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"]
   },
   "server": {
     "transport": "http",
