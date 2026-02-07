@@ -4,6 +4,8 @@
   "version": "0.1.1",
   "description": "An MCP server for Elastic Search, Kibana, and Elastic Security",
   "license": "Apache-2.0",
+  "homepage": "https://www.elastic.co",
+  "documentation": "https://www.elastic.co/docs/explore-analyze/ai-features/agent-builder/mcp-server",
   "icon": "icon.png",
   "author": {
     "name": "Stephen Akinyemi"

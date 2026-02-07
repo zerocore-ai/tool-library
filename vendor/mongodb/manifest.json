@@ -8,6 +8,8 @@
     "name": "Stephen Akinyemi"
   },
   "license": "Apache-2.0",
+  "homepage": "https://www.mongodb.com",
+  "documentation": "https://github.com/mongodb-js/mongodb-mcp-server",
   "compatibility": {
     "platforms": ["darwin", "win32", "linux"],
     "runtimes": {

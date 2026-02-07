@@ -1,0 +1,1491 @@
+{
+  "manifest_version": "0.3",
+  "name": "linear",
+  "version": "0.1.0",
+  "display_name": "Linear MCP",
+  "description": "Remote MCP server for Linear issues, projects, and comments.",
+  "homepage": "https://linear.app",
+  "documentation": "https://linear.app/docs/mcp",
+  "icon": "icon.png",
+  "author": {
+    "name": "Stephen Akinyemi"
+  },
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ]
+  },
+  "server": {
+    "transport": "http",
+    "mcp_config": {
+      "url": "https://mcp.linear.app/mcp"
+    }
+  },
+  "tools": [
+    {
+      "name": "create_attachment",
+      "description": "Create a new attachment on a specific Linear issue by uploading base64-encoded content."
+    },
+    {
+      "name": "create_comment",
+      "description": "Create a comment on a specific Linear issue"
+    },
+    {
+      "name": "create_document",
+      "description": "Create a new document in Linear"
+    },
+    {
+      "name": "create_issue",
+      "description": "Create a new Linear issue"
+    },
+    {
+      "name": "create_issue_label",
+      "description": "Create a new Linear issue label"
+    },
+    {
+      "name": "create_milestone",
+      "description": "Create a new milestone in a Linear project"
+    },
+    {
+      "name": "create_project",
+      "description": "Create a new project in Linear"
+    },
+    {
+      "name": "delete_attachment",
+      "description": "Delete an attachment by ID"
+    },
+    {
+      "name": "extract_images",
+      "description": "Extract and fetch images from markdown content. Use this to view screenshots, diagrams, or other images embedded in Linear issues, comments, or documents. Pass the markdown content (e.g., issue description) and receive the images as viewable data."
+    },
+    {
+      "name": "get_attachment",
+      "description": "Retrieve an attachment's content by ID."
+    },
+    {
+      "name": "get_document",
+      "description": "Retrieve a Linear document by ID or slug"
+    },
+    {
+      "name": "get_issue",
+      "description": "Retrieve detailed information about an issue by ID, including attachments and git branch name"
+    },
+    {
+      "name": "get_issue_status",
+      "description": "Retrieve detailed information about an issue status in Linear by name or ID"
+    },
+    {
+      "name": "get_milestone",
+      "description": "Retrieve details of a specific milestone by ID or name"
+    },
+    {
+      "name": "get_project",
+      "description": "Retrieve details of a specific project in Linear"
+    },
+    {
+      "name": "get_team",
+      "description": "Retrieve details of a specific Linear team"
+    },
+    {
+      "name": "get_user",
+      "description": "Retrieve details of a specific Linear user"
+    },
+    {
+      "name": "list_comments",
+      "description": "List comments for a specific Linear issue"
+    },
+    {
+      "name": "list_cycles",
+      "description": "Retrieve cycles for a specific Linear team"
+    },
+    {
+      "name": "list_documents",
+      "description": "List documents in the user's Linear workspace"
+    },
+    {
+      "name": "list_issue_labels",
+      "description": "List available issue labels in a Linear workspace or team"
+    },
+    {
+      "name": "list_issue_statuses",
+      "description": "List available issue statuses in a Linear team"
+    },
+    {
+      "name": "list_issues",
+      "description": "List issues in the user's Linear workspace. For my issues, use \"me\" as the assignee."
+    },
+    {
+      "name": "list_milestones",
+      "description": "List all milestones in a Linear project"
+    },
+    {
+      "name": "list_project_labels",
+      "description": "List available project labels in the Linear workspace"
+    },
+    {
+      "name": "list_projects",
+      "description": "List projects in the user's Linear workspace"
+    },
+    {
+      "name": "list_teams",
+      "description": "List teams in the user's Linear workspace"
+    },
+    {
+      "name": "list_users",
+      "description": "Retrieve users in the Linear workspace"
+    },
+    {
+      "name": "search_documentation",
+      "description": "Search Linear's documentation to learn about features and usage"
+    },
+    {
+      "name": "update_document",
+      "description": "Update an existing Linear document"
+    },
+    {
+      "name": "update_issue",
+      "description": "Update an existing Linear issue"
+    },
+    {
+      "name": "update_milestone",
+      "description": "Update an existing milestone in a Linear project"
+    },
+    {
+      "name": "update_project",
+      "description": "Update an existing Linear project"
+    }
+  ],
+  "_meta": {
+    "store.tool.mcpb": {
+      "static_responses": {
+        "tools/list": {
+          "tools": [
+            {
+              "name": "create_attachment",
+              "description": "Create a new attachment on a specific Linear issue by uploading base64-encoded content.",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "issue": {
+                    "type": "string",
+                    "description": "Issue ID or identifier (e.g., LIN-123)"
+                  },
+                  "base64Content": {
+                    "type": "string",
+                    "description": "Base64-encoded file content to upload"
+                  },
+                  "filename": {
+                    "type": "string",
+                    "description": "Filename for the upload (e.g., 'screenshot.png')"
+                  },
+                  "contentType": {
+                    "type": "string",
+                    "description": "MIME type for the upload (e.g., 'image/png', 'application/pdf')"
+                  },
+                  "title": {
+                    "description": "Optional title for the attachment",
+                    "type": "string"
+                  },
+                  "subtitle": {
+                    "description": "Optional subtitle for the attachment",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "issue",
+                  "base64Content",
+                  "filename",
+                  "contentType"
+                ]
+              }
+            },
+            {
+              "name": "create_comment",
+              "description": "Create a comment on a specific Linear issue",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "issueId": {
+                    "type": "string",
+                    "description": "Issue ID"
+                  },
+                  "parentId": {
+                    "description": "Parent comment ID (for replies)",
+                    "type": "string"
+                  },
+                  "body": {
+                    "type": "string",
+                    "description": "Content as Markdown"
+                  }
+                },
+                "required": [
+                  "issueId",
+                  "body"
+                ]
+              }
+            },
+            {
+              "name": "create_document",
+              "description": "Create a new document in Linear",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Document title"
+                  },
+                  "content": {
+                    "description": "Content as Markdown",
+                    "type": "string"
+                  },
+                  "project": {
+                    "description": "Project name or ID",
+                    "type": "string"
+                  },
+                  "issue": {
+                    "description": "Issue ID or identifier (e.g., LIN-123)",
+                    "type": "string"
+                  },
+                  "icon": {
+                    "description": "Icon emoji",
+                    "type": "string"
+                  },
+                  "color": {
+                    "description": "Hex color",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "title"
+                ]
+              }
+            },
+            {
+              "name": "create_issue",
+              "description": "Create a new Linear issue",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Issue title"
+                  },
+                  "description": {
+                    "description": "Content as Markdown",
+                    "type": "string"
+                  },
+                  "team": {
+                    "type": "string",
+                    "description": "Team name or ID"
+                  },
+                  "cycle": {
+                    "description": "Cycle name, number, or ID",
+                    "type": "string"
+                  },
+                  "milestone": {
+                    "description": "Milestone name or ID",
+                    "type": "string"
+                  },
+                  "priority": {
+                    "description": "0=None, 1=Urgent, 2=High, 3=Normal, 4=Low",
+                    "type": "number"
+                  },
+                  "project": {
+                    "description": "Project name or ID",
+                    "type": "string"
+                  },
+                  "state": {
+                    "description": "State type, name, or ID",
+                    "type": "string"
+                  },
+                  "assignee": {
+                    "description": "User ID, name, email, or \"me\"",
+                    "type": "string"
+                  },
+                  "delegate": {
+                    "description": "Agent name or ID",
+                    "type": "string"
+                  },
+                  "labels": {
+                    "description": "Label names or IDs",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "dueDate": {
+                    "description": "Due date (ISO format)",
+                    "type": "string"
+                  },
+                  "parentId": {
+                    "description": "Parent issue ID",
+                    "type": "string"
+                  },
+                  "estimate": {
+                    "description": "Issue estimate value",
+                    "type": "number"
+                  },
+                  "links": {
+                    "description": "Link attachments [{url, title}]",
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "url",
+                        "title"
+                      ]
+                    }
+                  },
+                  "blocks": {
+                    "description": "Issue IDs/identifiers this blocks",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "blockedBy": {
+                    "description": "Issue IDs/identifiers blocking this",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "relatedTo": {
+                    "description": "Related issue IDs/identifiers",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "duplicateOf": {
+                    "description": "Duplicate of issue ID/identifier",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "title",
+                  "team"
+                ]
+              }
+            },
+            {
+              "name": "create_issue_label",
+              "description": "Create a new Linear issue label",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Label name"
+                  },
+                  "description": {
+                    "description": "Label description",
+                    "type": "string"
+                  },
+                  "color": {
+                    "description": "Hex color code",
+                    "type": "string"
+                  },
+                  "teamId": {
+                    "description": "Team UUID (omit for workspace label)",
+                    "type": "string"
+                  },
+                  "parentId": {
+                    "description": "Parent label group UUID",
+                    "type": "string"
+                  },
+                  "isGroup": {
+                    "default": false,
+                    "description": "Is label group (not directly applicable)",
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            },
+            {
+              "name": "create_milestone",
+              "description": "Create a new milestone in a Linear project",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "project": {
+                    "type": "string",
+                    "description": "Project name or ID"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Milestone name"
+                  },
+                  "description": {
+                    "description": "Milestone description",
+                    "type": "string"
+                  },
+                  "targetDate": {
+                    "description": "Target completion date (ISO format)",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "project",
+                  "name"
+                ]
+              }
+            },
+            {
+              "name": "create_project",
+              "description": "Create a new project in Linear",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Project name"
+                  },
+                  "icon": {
+                    "description": "Icon emoji (e.g., :eagle:)",
+                    "type": "string"
+                  },
+                  "color": {
+                    "description": "Hex color",
+                    "type": "string"
+                  },
+                  "summary": {
+                    "description": "Short summary (max 255 chars)",
+                    "type": "string"
+                  },
+                  "description": {
+                    "description": "Content as Markdown",
+                    "type": "string"
+                  },
+                  "initiative": {
+                    "description": "Initiative name or ID",
+                    "type": "string"
+                  },
+                  "state": {
+                    "description": "Project state",
+                    "type": "string"
+                  },
+                  "startDate": {
+                    "description": "Start date (ISO format)",
+                    "type": "string"
+                  },
+                  "targetDate": {
+                    "description": "Target date (ISO format)",
+                    "type": "string"
+                  },
+                  "priority": {
+                    "description": "0=None, 1=Urgent, 2=High, 3=Medium, 4=Low",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                  },
+                  "team": {
+                    "type": "string",
+                    "description": "Team name or ID"
+                  },
+                  "labels": {
+                    "description": "Label names or IDs",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "lead": {
+                    "description": "User ID, name, email, or \"me\"",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "team"
+                ]
+              }
+            },
+            {
+              "name": "delete_attachment",
+              "description": "Delete an attachment by ID",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Attachment ID"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            },
+            {
+              "name": "extract_images",
+              "description": "Extract and fetch images from markdown content. Use this to view screenshots, diagrams, or other images embedded in Linear issues, comments, or documents. Pass the markdown content (e.g., issue description) and receive the images as viewable data.",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "markdown": {
+                    "type": "string",
+                    "description": "Markdown content containing image references (e.g., issue description, comment body)"
+                  }
+                },
+                "required": [
+                  "markdown"
+                ]
+              }
+            },
+            {
+              "name": "get_attachment",
+              "description": "Retrieve an attachment's content by ID.",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Attachment ID"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            },
+            {
+              "name": "get_document",
+              "description": "Retrieve a Linear document by ID or slug",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Document ID or slug"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            },
+            {
+              "name": "get_issue",
+              "description": "Retrieve detailed information about an issue by ID, including attachments and git branch name",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Issue ID"
+                  },
+                  "includeRelations": {
+                    "default": false,
+                    "description": "Include blocking/related/duplicate relations",
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            },
+            {
+              "name": "get_issue_status",
+              "description": "Retrieve detailed information about an issue status in Linear by name or ID",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Status ID"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Status name"
+                  },
+                  "team": {
+                    "type": "string",
+                    "description": "Team name or ID"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "team"
+                ]
+              }
+            },
+            {
+              "name": "get_milestone",
+              "description": "Retrieve details of a specific milestone by ID or name",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "project": {
+                    "type": "string",
+                    "description": "Project name or ID"
+                  },
+                  "query": {
+                    "type": "string",
+                    "description": "Milestone name or ID"
+                  }
+                },
+                "required": [
+                  "project",
+                  "query"
+                ]
+              }
+            },
+            {
+              "name": "get_project",
+              "description": "Retrieve details of a specific project in Linear",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "Project ID or name"
+                  },
+                  "includeMilestones": {
+                    "default": false,
+                    "description": "Include milestones",
+                    "type": "boolean"
+                  },
+                  "includeResources": {
+                    "default": false,
+                    "description": "Include resources (documents, links, attachments)",
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              }
+            },
+            {
+              "name": "get_team",
+              "description": "Retrieve details of a specific Linear team",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "Team UUID, key, or name"
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              }
+            },
+            {
+              "name": "get_user",
+              "description": "Retrieve details of a specific Linear user",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "User ID, name, email, or \"me\""
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              }
+            },
+            {
+              "name": "list_comments",
+              "description": "List comments for a specific Linear issue",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "issueId": {
+                    "type": "string",
+                    "description": "Issue ID"
+                  }
+                },
+                "required": [
+                  "issueId"
+                ]
+              }
+            },
+            {
+              "name": "list_cycles",
+              "description": "Retrieve cycles for a specific Linear team",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "teamId": {
+                    "type": "string",
+                    "description": "Team ID"
+                  },
+                  "type": {
+                    "description": "Filter: current, previous, next, or all",
+                    "type": "string",
+                    "enum": [
+                      "current",
+                      "previous",
+                      "next"
+                    ]
+                  }
+                },
+                "required": [
+                  "teamId"
+                ]
+              }
+            },
+            {
+              "name": "list_documents",
+              "description": "List documents in the user's Linear workspace",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "limit": {
+                    "default": 50,
+                    "description": "Max results (default 50, max 250)",
+                    "type": "number",
+                    "maximum": 250
+                  },
+                  "cursor": {
+                    "description": "Next page cursor",
+                    "type": "string"
+                  },
+                  "orderBy": {
+                    "default": "updatedAt",
+                    "description": "Sort: createdAt | updatedAt",
+                    "type": "string",
+                    "enum": [
+                      "createdAt",
+                      "updatedAt"
+                    ]
+                  },
+                  "query": {
+                    "description": "Search query",
+                    "type": "string"
+                  },
+                  "projectId": {
+                    "description": "Filter by project ID",
+                    "type": "string"
+                  },
+                  "initiativeId": {
+                    "description": "Filter by initiative ID",
+                    "type": "string"
+                  },
+                  "creatorId": {
+                    "description": "Filter by creator ID",
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "description": "Created after: ISO-8601 date/duration (e.g., -P1D)",
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "description": "Updated after: ISO-8601 date/duration (e.g., -P1D)",
+                    "type": "string"
+                  },
+                  "includeArchived": {
+                    "default": false,
+                    "description": "Include archived items",
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            {
+              "name": "list_issue_labels",
+              "description": "List available issue labels in a Linear workspace or team",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "limit": {
+                    "default": 50,
+                    "description": "Max results (default 50, max 250)",
+                    "type": "number",
+                    "maximum": 250
+                  },
+                  "cursor": {
+                    "description": "Next page cursor",
+                    "type": "string"
+                  },
+                  "orderBy": {
+                    "default": "updatedAt",
+                    "description": "Sort: createdAt | updatedAt",
+                    "type": "string",
+                    "enum": [
+                      "createdAt",
+                      "updatedAt"
+                    ]
+                  },
+                  "name": {
+                    "description": "Filter by name",
+                    "type": "string"
+                  },
+                  "team": {
+                    "description": "Team name or ID",
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            {
+              "name": "list_issue_statuses",
+              "description": "List available issue statuses in a Linear team",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "team": {
+                    "type": "string",
+                    "description": "Team name or ID"
+                  }
+                },
+                "required": [
+                  "team"
+                ]
+              }
+            },
+            {
+              "name": "list_issues",
+              "description": "List issues in the user's Linear workspace. For my issues, use \"me\" as the assignee.",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "limit": {
+                    "default": 50,
+                    "description": "Max results (default 50, max 250)",
+                    "type": "number",
+                    "maximum": 250
+                  },
+                  "cursor": {
+                    "description": "Next page cursor",
+                    "type": "string"
+                  },
+                  "orderBy": {
+                    "default": "updatedAt",
+                    "description": "Sort: createdAt | updatedAt",
+                    "type": "string",
+                    "enum": [
+                      "createdAt",
+                      "updatedAt"
+                    ]
+                  },
+                  "query": {
+                    "description": "Search issue title or description",
+                    "type": "string"
+                  },
+                  "team": {
+                    "description": "Team name or ID",
+                    "type": "string"
+                  },
+                  "state": {
+                    "description": "State type, name, or ID",
+                    "type": "string"
+                  },
+                  "cycle": {
+                    "description": "Cycle name, number, or ID",
+                    "type": "string"
+                  },
+                  "label": {
+                    "description": "Label name or ID",
+                    "type": "string"
+                  },
+                  "assignee": {
+                    "description": "User ID, name, email, or \"me\"",
+                    "type": "string"
+                  },
+                  "delegate": {
+                    "description": "Agent name or ID",
+                    "type": "string"
+                  },
+                  "project": {
+                    "description": "Project name or ID",
+                    "type": "string"
+                  },
+                  "priority": {
+                    "description": "0=None, 1=Urgent, 2=High, 3=Normal, 4=Low",
+                    "type": "number"
+                  },
+                  "parentId": {
+                    "description": "Parent issue ID",
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "description": "Created after: ISO-8601 date/duration (e.g., -P1D)",
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "description": "Updated after: ISO-8601 date/duration (e.g., -P1D)",
+                    "type": "string"
+                  },
+                  "includeArchived": {
+                    "default": true,
+                    "description": "Include archived items",
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            {
+              "name": "list_milestones",
+              "description": "List all milestones in a Linear project",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "project": {
+                    "type": "string",
+                    "description": "Project name or ID"
+                  }
+                },
+                "required": [
+                  "project"
+                ]
+              }
+            },
+            {
+              "name": "list_project_labels",
+              "description": "List available project labels in the Linear workspace",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "limit": {
+                    "default": 50,
+                    "description": "Max results (default 50, max 250)",
+                    "type": "number",
+                    "maximum": 250
+                  },
+                  "cursor": {
+                    "description": "Next page cursor",
+                    "type": "string"
+                  },
+                  "orderBy": {
+                    "default": "updatedAt",
+                    "description": "Sort: createdAt | updatedAt",
+                    "type": "string",
+                    "enum": [
+                      "createdAt",
+                      "updatedAt"
+                    ]
+                  },
+                  "name": {
+                    "description": "Filter by name",
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            {
+              "name": "list_projects",
+              "description": "List projects in the user's Linear workspace",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "limit": {
+                    "default": 50,
+                    "description": "Max results (default 50, max 250)",
+                    "type": "number",
+                    "maximum": 250
+                  },
+                  "cursor": {
+                    "description": "Next page cursor",
+                    "type": "string"
+                  },
+                  "orderBy": {
+                    "default": "updatedAt",
+                    "description": "Sort: createdAt | updatedAt",
+                    "type": "string",
+                    "enum": [
+                      "createdAt",
+                      "updatedAt"
+                    ]
+                  },
+                  "query": {
+                    "description": "Search project name",
+                    "type": "string"
+                  },
+                  "state": {
+                    "description": "State type, name, or ID",
+                    "type": "string"
+                  },
+                  "initiative": {
+                    "description": "Initiative name or ID",
+                    "type": "string"
+                  },
+                  "team": {
+                    "description": "Team name or ID",
+                    "type": "string"
+                  },
+                  "member": {
+                    "description": "User ID, name, email, or \"me\"",
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "description": "Created after: ISO-8601 date/duration (e.g., -P1D)",
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "description": "Updated after: ISO-8601 date/duration (e.g., -P1D)",
+                    "type": "string"
+                  },
+                  "includeMilestones": {
+                    "default": false,
+                    "description": "Include milestones",
+                    "type": "boolean"
+                  },
+                  "includeArchived": {
+                    "default": false,
+                    "description": "Include archived items",
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            {
+              "name": "list_teams",
+              "description": "List teams in the user's Linear workspace",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "limit": {
+                    "default": 50,
+                    "description": "Max results (default 50, max 250)",
+                    "type": "number",
+                    "maximum": 250
+                  },
+                  "cursor": {
+                    "description": "Next page cursor",
+                    "type": "string"
+                  },
+                  "orderBy": {
+                    "default": "updatedAt",
+                    "description": "Sort: createdAt | updatedAt",
+                    "type": "string",
+                    "enum": [
+                      "createdAt",
+                      "updatedAt"
+                    ]
+                  },
+                  "query": {
+                    "description": "Search query",
+                    "type": "string"
+                  },
+                  "includeArchived": {
+                    "default": false,
+                    "description": "Include archived items",
+                    "type": "boolean"
+                  },
+                  "createdAt": {
+                    "description": "Created after: ISO-8601 date/duration (e.g., -P1D)",
+                    "type": "string"
+                  },
+                  "updatedAt": {
+                    "description": "Updated after: ISO-8601 date/duration (e.g., -P1D)",
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            {
+              "name": "list_users",
+              "description": "Retrieve users in the Linear workspace",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "limit": {
+                    "default": 50,
+                    "description": "Max results (default 50, max 250)",
+                    "type": "number",
+                    "maximum": 250
+                  },
+                  "cursor": {
+                    "description": "Next page cursor",
+                    "type": "string"
+                  },
+                  "orderBy": {
+                    "default": "updatedAt",
+                    "description": "Sort: createdAt | updatedAt",
+                    "type": "string",
+                    "enum": [
+                      "createdAt",
+                      "updatedAt"
+                    ]
+                  },
+                  "query": {
+                    "description": "Filter by name or email",
+                    "type": "string"
+                  },
+                  "team": {
+                    "description": "Team name or ID",
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            {
+              "name": "search_documentation",
+              "description": "Search Linear's documentation to learn about features and usage",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "Search query"
+                  },
+                  "page": {
+                    "default": 0,
+                    "description": "Page number",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              }
+            },
+            {
+              "name": "update_document",
+              "description": "Update an existing Linear document",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Document ID or slug"
+                  },
+                  "title": {
+                    "description": "Document title",
+                    "type": "string"
+                  },
+                  "content": {
+                    "description": "Content as Markdown",
+                    "type": "string"
+                  },
+                  "project": {
+                    "description": "Project name or ID",
+                    "type": "string"
+                  },
+                  "icon": {
+                    "description": "Icon emoji",
+                    "type": "string"
+                  },
+                  "color": {
+                    "description": "Hex color",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            },
+            {
+              "name": "update_issue",
+              "description": "Update an existing Linear issue",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Issue ID"
+                  },
+                  "title": {
+                    "description": "Issue title",
+                    "type": "string"
+                  },
+                  "description": {
+                    "description": "Content as Markdown",
+                    "type": "string"
+                  },
+                  "team": {
+                    "description": "Team name or ID",
+                    "type": "string"
+                  },
+                  "milestone": {
+                    "description": "Milestone name or ID",
+                    "type": "string"
+                  },
+                  "priority": {
+                    "description": "0=None, 1=Urgent, 2=High, 3=Normal, 4=Low",
+                    "type": "number"
+                  },
+                  "project": {
+                    "description": "Project name or ID",
+                    "type": "string"
+                  },
+                  "state": {
+                    "description": "State type, name, or ID",
+                    "type": "string"
+                  },
+                  "cycle": {
+                    "description": "Cycle name, number, or ID",
+                    "type": "string"
+                  },
+                  "assignee": {
+                    "description": "User ID, name, email, or \"me\". Null to remove",
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "delegate": {
+                    "description": "Agent name or ID. Null to remove",
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "labels": {
+                    "description": "Label names or IDs",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "parentId": {
+                    "description": "Parent issue ID",
+                    "type": "string"
+                  },
+                  "dueDate": {
+                    "description": "Due date (ISO format)",
+                    "type": "string"
+                  },
+                  "estimate": {
+                    "description": "Issue estimate value",
+                    "type": "number"
+                  },
+                  "links": {
+                    "description": "Link attachments [{url, title}]",
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "url",
+                        "title"
+                      ]
+                    }
+                  },
+                  "blocks": {
+                    "description": "Issue IDs/identifiers this blocks. Replaces existing; omit to keep unchanged",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "blockedBy": {
+                    "description": "Issue IDs/identifiers blocking this. Replaces existing; omit to keep unchanged",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "relatedTo": {
+                    "description": "Related issue IDs/identifiers. Replaces existing; omit to keep unchanged",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "duplicateOf": {
+                    "description": "Duplicate of issue ID/identifier. Null to remove",
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            },
+            {
+              "name": "update_milestone",
+              "description": "Update an existing milestone in a Linear project",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "project": {
+                    "type": "string",
+                    "description": "Project name or ID"
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "Milestone name or ID"
+                  },
+                  "name": {
+                    "description": "Milestone name",
+                    "type": "string"
+                  },
+                  "description": {
+                    "description": "Milestone description",
+                    "type": "string"
+                  },
+                  "targetDate": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Target completion date (ISO format, null to remove)"
+                  }
+                },
+                "required": [
+                  "project",
+                  "id"
+                ]
+              }
+            },
+            {
+              "name": "update_project",
+              "description": "Update an existing Linear project",
+              "input_schema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Project ID"
+                  },
+                  "name": {
+                    "description": "Project name",
+                    "type": "string"
+                  },
+                  "icon": {
+                    "description": "Icon emoji (e.g., :eagle:)",
+                    "type": "string"
+                  },
+                  "color": {
+                    "description": "Hex color",
+                    "type": "string"
+                  },
+                  "summary": {
+                    "description": "Short summary (max 255 chars)",
+                    "type": "string"
+                  },
+                  "description": {
+                    "description": "Content as Markdown",
+                    "type": "string"
+                  },
+                  "state": {
+                    "description": "Project state",
+                    "type": "string"
+                  },
+                  "startDate": {
+                    "description": "Start date (ISO format)",
+                    "type": "string"
+                  },
+                  "targetDate": {
+                    "description": "Target date (ISO format)",
+                    "type": "string"
+                  },
+                  "priority": {
+                    "description": "0=None, 1=Urgent, 2=High, 3=Medium, 4=Low",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                  },
+                  "labels": {
+                    "description": "Label names or IDs",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "lead": {
+                    "description": "User ID, name, email, or \"me\". Null to remove",
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "initiatives": {
+                    "description": "Initiative IDs or names",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
