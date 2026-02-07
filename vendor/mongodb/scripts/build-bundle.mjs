@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 
 function run(cmd, args, options = {}) {
   return new Promise((resolve, reject) => {
@@ -33,13 +34,54 @@ async function pathExists(p) {
   }
 }
 
+async function ensureUpstreamSubmoduleReady({ toolDir, upstreamDir }) {
+  const required = [
+    path.join(upstreamDir, 'package.json'),
+    path.join(upstreamDir, 'pnpm-lock.yaml'),
+  ];
+  const missing = [];
+
+  for (const filePath of required) {
+    if (!(await pathExists(filePath))) missing.push(path.basename(filePath));
+  }
+
+  if (missing.length === 0) return;
+
+  console.log(
+    `\nNOTE: Upstream submodule checkout looks incomplete (missing: ${missing.join(', ')}).\n` +
+      `Attempting to init/update the submodule...`
+  );
+
+  try {
+    await run('git', ['submodule', 'sync', '--recursive'], { cwd: toolDir });
+    await run('git', ['submodule', 'update', '--init', '--recursive', 'upstream'], { cwd: toolDir });
+  } catch (err) {
+    throw new Error(
+      `Failed to init/update upstream submodule.\n` +
+        `- Expected files: ${required.map((p) => path.relative(toolDir, p)).join(', ')}\n` +
+        `- Try: git submodule update --init --recursive vendor/mongodb/upstream\n` +
+        `- Original error: ${err?.message ?? String(err)}`
+    );
+  }
+
+  for (const filePath of required) {
+    if (!(await pathExists(filePath))) {
+      throw new Error(
+        `Upstream submodule is still missing ${path.relative(toolDir, filePath)} after init/update.\n` +
+          `Try: git submodule update --init --recursive vendor/mongodb/upstream`
+      );
+    }
+  }
+}
+
 async function main() {
-  const toolDir = path.resolve(new URL('..', import.meta.url).pathname);
+  const toolDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const upstreamDir = path.join(toolDir, 'upstream');
 
   if (!(await pathExists(upstreamDir))) {
     throw new Error(`Missing upstream submodule at ${upstreamDir} (did you init submodules?)`);
   }
+  await ensureUpstreamSubmoduleReady({ toolDir, upstreamDir });
 
   const srcEsmDist = path.join(upstreamDir, 'dist', 'esm');
   const dstEsmDist = path.join(toolDir, 'server', 'mongodb-mcp-server', 'dist', 'esm');

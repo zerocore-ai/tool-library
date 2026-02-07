@@ -1,10 +1,12 @@
 {
   "manifest_version": "0.3",
   "name": "atlassian",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "display_name": "Atlassian (Jira & Confluence)",
   "description": "An MCP server for Atlassian Jira and Confluence",
   "license": "Apache-2.0",
+  "homepage": "https://www.atlassian.com",
+  "documentation": "https://support.atlassian.com/atlassian-rovo-mcp-server/docs/getting-started-with-the-atlassian-remote-mcp-server/",
   "icon": "icon.png",
   "author": {
     "name": "Stephen Akinyemi"

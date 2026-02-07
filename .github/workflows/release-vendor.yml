@@ -61,18 +61,19 @@ jobs:
           set -euo pipefail
           corepack enable
           corepack prepare yarn@1.22.22 --activate
-          corepack prepare pnpm@9.15.6 --activate
+          corepack prepare pnpm@10.23.0 --activate
 
-      - name: Init upstream submodule (if present)
+      - name: Init upstream submodule
         shell: bash
         run: |
           set -euo pipefail
           UPSTREAM_PATH="vendor/${{ matrix.vendor }}/upstream"
-          if git config -f .gitmodules --get-regexp '^submodule\\..*\\.path$' | awk '{print $2}' | grep -Fxq "$UPSTREAM_PATH"; then
-            git submodule update --init --recursive "$UPSTREAM_PATH"
-          else
-            echo "No upstream submodule configured for $UPSTREAM_PATH; skipping."
-          fi
+          trap 'echo "::group::Submodule debug"; echo "UPSTREAM_PATH=${UPSTREAM_PATH}"; git submodule status --recursive || true; if [ -d "${UPSTREAM_PATH}" ]; then ls -la "${UPSTREAM_PATH}" | head -n 200 || true; else echo "Upstream directory missing"; fi; echo "::endgroup::"' ERR
+          git submodule sync --recursive
+          git submodule update --init --recursive "$UPSTREAM_PATH"
+          echo "::group::Submodule status (post-update)"
+          git submodule status --recursive "$UPSTREAM_PATH" || true
+          echo "::endgroup::"
 
       - name: Build upstream dist (skip runtime deps)
         shell: bash

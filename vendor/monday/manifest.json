@@ -5,6 +5,8 @@
   "display_name": "monday.com MCP",
   "description": "An MCP server bundle for the monday.com API.",
   "license": "MIT",
+  "homepage": "https://monday.com",
+  "documentation": "https://github.com/mondaycom/mcp",
   "icon": "icon.png",
   "author": {
     "name": "Stephen Akinyemi"
