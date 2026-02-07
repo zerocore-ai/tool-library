@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "elicitation",
   "display_name": "Elicitation MCP",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "User input elicitation for AI agents via structured questions",
   "icon": "icon.png",
   "license": "Apache-2.0",
