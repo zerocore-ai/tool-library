@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "system",
   "display_name": "System MCP",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "System utilities for AI agents (sleep, datetime, random)",
   "icon": "icon.png",
   "license": "Apache-2.0",
