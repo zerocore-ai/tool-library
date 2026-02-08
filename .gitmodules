@@ -4,3 +4,48 @@
 [submodule "vendor/mongodb/upstream"]
 	path = vendor/mongodb/upstream
 	url = https://github.com/mongodb-js/mongodb-mcp-server
+[submodule "packages/bash-mcpb"]
+	path = packages/bash-mcpb
+	url = git@github.com:zerocore-ai-library/bash-mcpb.git
+[submodule "packages/elicitation-mcpb"]
+	path = packages/elicitation-mcpb
+	url = git@github.com:zerocore-ai-library/elicitation-mcpb.git
+[submodule "packages/filesystem-mcpb"]
+	path = packages/filesystem-mcpb
+	url = git@github.com:zerocore-ai-library/filesystem-mcpb.git
+[submodule "packages/plugins-mcpb"]
+	path = packages/plugins-mcpb
+	url = git@github.com:zerocore-ai-library/plugins-mcpb.git
+[submodule "packages/system-mcpb"]
+	path = packages/system-mcpb
+	url = git@github.com:zerocore-ai-library/system-mcpb.git
+[submodule "packages/terminal-mcpb"]
+	path = packages/terminal-mcpb
+	url = git@github.com:zerocore-ai-library/terminal-mcpb.git
+[submodule "packages/todolist-mcpb"]
+	path = packages/todolist-mcpb
+	url = git@github.com:zerocore-ai-library/todolist-mcpb.git
+[submodule "packages/web-mcpb"]
+	path = packages/web-mcpb
+	url = git@github.com:zerocore-ai-library/web-mcpb.git
+[submodule "vendor/atlassian-mcpb"]
+	path = vendor/atlassian-mcpb
+	url = git@github.com:zerocore-ai-library/atlassian-mcpb.git
+[submodule "vendor/elastic-mcpb"]
+	path = vendor/elastic-mcpb
+	url = git@github.com:zerocore-ai-library/elastic-mcpb.git
+[submodule "vendor/linear-mcpb"]
+	path = vendor/linear-mcpb
+	url = git@github.com:zerocore-ai-library/linear-mcpb.git
+[submodule "vendor/monday-mcpb"]
+	path = vendor/monday-mcpb
+	url = git@github.com:zerocore-ai-library/monday-mcpb.git
+[submodule "vendor/mongodb-mcpb"]
+	path = vendor/mongodb-mcpb
+	url = git@github.com:zerocore-ai-library/mongodb-mcpb.git
+[submodule "vendor/github-mcpb"]
+	path = vendor/github-mcpb
+	url = git@github.com:zerocore-ai-library/github-mcpb.git
+[submodule "packages/opendata-mcpb"]
+	path = packages/opendata-mcpb
+	url = git@github.com:zerocore-ai-library/opendata-mcpb.git
