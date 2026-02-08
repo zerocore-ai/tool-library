@@ -3,7 +3,7 @@
   "name": "web",
   "display_name": "Web MCP",
   "version": "0.1.1",
-  "description": "Web fetch and search tools for AI agents",
+  "description": "Web fetch and search tools for AI agents. Based on Claude Code's WebFetch and WebSearch tool designs.",
   "icon": "icon.png",
   "license": "Apache-2.0",
   "author": {

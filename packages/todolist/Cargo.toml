@@ -2,6 +2,7 @@
 name = "todolist"
 version = "0.1.0"
 edition = "2024"
+description = "Session-scoped task tracking for AI agents. Based on Claude Code's TodoWrite tool design."
 
 [dependencies]
 rmcp = { version = "0.12", features = ["server", "macros", "transport-io"] }

@@ -1,6 +1,6 @@
 # Bash MCP Server
 
-An MCP server for executing shell commands with configurable timeout and structured output.
+Shell command execution for AI agents. Based on [Claude Code's Bash tool design](https://gist.github.com/bgauryy/0cdb9aa337d01ae5bd0c803943aa36bd).
 
 ## Tools
 

@@ -1,6 +1,6 @@
 # Web MCP Server
 
-An MCP server providing web fetch and search capabilities for AI agents.
+Web fetch and search tools for AI agents. Based on [Claude Code's WebFetch and WebSearch tool designs](https://gist.github.com/bgauryy/0cdb9aa337d01ae5bd0c803943aa36bd).
 
 ## Tools
 

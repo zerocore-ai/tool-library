@@ -2,6 +2,7 @@
 name = "bash"
 version = "0.1.0"
 edition = "2024"
+description = "Shell command execution for AI agents. Based on Claude Code's Bash tool design."
 
 [dependencies]
 rmcp = { version = "0.12", features = ["server", "macros", "transport-io"] }

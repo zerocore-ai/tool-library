@@ -716,7 +716,7 @@ impl Server {
     ///
     /// Returns file content with line numbers in cat -n format (1-indexed).
     /// Supports offset/limit for reading large files in chunks.
-    #[tool(name = "filesystem__read", description = "Read a file from the local filesystem. Returns content with line numbers.")]
+    #[tool(name = "filesystem__read", description = "Read a file from the local filesystem.")]
     async fn read(&self, params: Parameters<ReadInput>) -> Result<Json<ReadOutput>, McpError> {
         let input: ReadInput = params.0;
 
@@ -785,7 +785,7 @@ impl Server {
     ///
     /// Overwrites the entire file content. Creates the file if it doesn't exist.
     /// Requires reading existing files first before overwriting.
-    #[tool(name = "filesystem__write", description = "Write content to a file. Overwrites existing content. Existing files must be read first.")]
+    #[tool(name = "filesystem__write", description = "Write content to a file.")]
     async fn write(&self, params: Parameters<WriteInput>) -> Result<Json<WriteOutput>, McpError> {
         let input: WriteInput = params.0;
 
@@ -833,7 +833,7 @@ impl Server {
     /// Finds old_string and replaces it with new_string. By default, fails if
     /// old_string is not unique unless replace_all is true.
     /// Requires reading the file first before editing.
-    #[tool(name = "filesystem__edit", description = "Edit a file by replacing exact string matches. File must be read first.")]
+    #[tool(name = "filesystem__edit", description = "Edit a file by replacing exact string matches.")]
     async fn edit(&self, params: Parameters<EditInput>) -> Result<Json<EditOutput>, McpError> {
         let input: EditInput = params.0;
 

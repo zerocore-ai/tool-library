@@ -3,7 +3,7 @@
   "name": "todolist",
   "display_name": "Todolist MCP",
   "version": "0.1.1",
-  "description": "Session-scoped task tracking for AI agents",
+  "description": "Session-scoped task tracking for AI agents. Based on Claude Code's TodoWrite tool design.",
   "icon": "icon.png",
   "license": "Apache-2.0",
   "author": {
