@@ -3,7 +3,7 @@
   "name": "filesystem",
   "display_name": "Filesystem MCP",
   "version": "0.1.1",
-  "description": "File system operations for AI agents (read, write, edit, glob, grep)",
+  "description": "File system operations for AI agents. Based on Claude Code's Read, Write, Edit, Glob, and Grep tool designs.",
   "icon": "icon.png",
   "license": "Apache-2.0",
   "author": {

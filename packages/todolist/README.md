@@ -1,6 +1,6 @@
 # Todolist MCP Server
 
-An MCP server providing session-scoped task tracking for AI agents. Maintains a simple todo list that persists for the duration of the server session.
+Session-scoped task tracking for AI agents. Based on [Claude Code's TodoWrite tool design](https://gist.github.com/bgauryy/0cdb9aa337d01ae5bd0c803943aa36bd).
 
 ## Tools
 

@@ -263,7 +263,7 @@ impl Server {
     /// - Only one item can have in_progress status
     #[tool(
         name = "todolist__set",
-        description = "Replace the entire todo list. Server validates constraints."
+        description = "Replace the entire todo list."
     )]
     async fn set(&self, params: Parameters<SetInput>) -> Result<Json<SetOutput>, McpError> {
         let input: SetInput = params.0;

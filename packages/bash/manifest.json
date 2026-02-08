@@ -3,7 +3,7 @@
   "name": "bash",
   "display_name": "Bash MCP",
   "version": "0.1.1",
-  "description": "An MCP server for executing shell commands with configurable timeout and structured output.",
+  "description": "Shell command execution for AI agents. Based on Claude Code's Bash tool design.",
   "icon": "icon.png",
   "license": "Apache-2.0",
   "author": {

@@ -1,6 +1,6 @@
 # Filesystem MCP Server
 
-An MCP server providing file system operations for AI agents including reading, writing, editing, and searching files.
+File system operations for AI agents. Based on [Claude Code's Read, Write, Edit, Glob, and Grep tool designs](https://gist.github.com/bgauryy/0cdb9aa337d01ae5bd0c803943aa36bd).
 
 ## Tools
 

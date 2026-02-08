@@ -2,6 +2,7 @@
 name = "web"
 version = "0.1.0"
 edition = "2024"
+description = "Web fetch and search tools for AI agents. Based on Claude Code's WebFetch and WebSearch tool designs."
 
 [dependencies]
 rmcp = { version = "0.12", features = ["server", "macros", "transport-io"] }
