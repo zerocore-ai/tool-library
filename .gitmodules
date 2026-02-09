@@ -1,9 +1,3 @@
-[submodule "vendor/monday/upstream"]
-	path = vendor/monday/upstream
-	url = https://github.com/mondaycom/mcp
-[submodule "vendor/mongodb/upstream"]
-	path = vendor/mongodb/upstream
-	url = https://github.com/mongodb-js/mongodb-mcp-server
 [submodule "packages/bash-mcpb"]
 	path = packages/bash-mcpb
 	url = git@github.com:zerocore-ai-library/bash-mcpb.git
