@@ -6,7 +6,7 @@ A collection of MCP tools for AI agents.
 
 This repository contains MCP (Model Context Protocol) servers. Each server provides a set of related tools that AI agents can use to interact with the system.
 
-## Packages
+## Core
 
 | Server        | Description                              | Tools                                                                                               |
 | ------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------- |
@@ -19,7 +19,7 @@ This repository contains MCP (Model Context Protocol) servers. Each server provi
 | `todolist`    | Session-scoped task tracking             | `todolist__get`, `todolist__set`                                                                    |
 | `web`         | Web fetch and search                     | `web__fetch`, `web__search`                                                                         |
 
-## Vendor
+## External
 
 Third-party MCP servers packaged for [tool.store](https://tool.store). These are wrappers around upstream projects with MCPB manifests.
 
@@ -45,8 +45,8 @@ make help         # List available targets
 Test with [tool-cli](https://github.com/zerocore-ai/tool-cli):
 
 ```sh
-tool info ./packages/system
-tool call ./packages/bash -m bash__exec -p command="echo hello"
+tool info ./core/system
+tool call ./core/bash -m bash__exec -p command="echo hello"
 ```
 
 ## License

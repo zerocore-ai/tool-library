@@ -1,45 +1,45 @@
-[submodule "packages/bash-mcpb"]
-	path = packages/bash-mcpb
+[submodule "core/bash-mcpb"]
+	path = core/bash-mcpb
 	url = git@github.com:zerocore-ai-library/bash-mcpb.git
-[submodule "packages/elicitation-mcpb"]
-	path = packages/elicitation-mcpb
+[submodule "core/elicitation-mcpb"]
+	path = core/elicitation-mcpb
 	url = git@github.com:zerocore-ai-library/elicitation-mcpb.git
-[submodule "packages/filesystem-mcpb"]
-	path = packages/filesystem-mcpb
+[submodule "core/filesystem-mcpb"]
+	path = core/filesystem-mcpb
 	url = git@github.com:zerocore-ai-library/filesystem-mcpb.git
-[submodule "packages/plugins-mcpb"]
-	path = packages/plugins-mcpb
+[submodule "core/plugins-mcpb"]
+	path = core/plugins-mcpb
 	url = git@github.com:zerocore-ai-library/plugins-mcpb.git
-[submodule "packages/system-mcpb"]
-	path = packages/system-mcpb
+[submodule "core/system-mcpb"]
+	path = core/system-mcpb
 	url = git@github.com:zerocore-ai-library/system-mcpb.git
-[submodule "packages/terminal-mcpb"]
-	path = packages/terminal-mcpb
+[submodule "core/terminal-mcpb"]
+	path = core/terminal-mcpb
 	url = git@github.com:zerocore-ai-library/terminal-mcpb.git
-[submodule "packages/todolist-mcpb"]
-	path = packages/todolist-mcpb
+[submodule "core/todolist-mcpb"]
+	path = core/todolist-mcpb
 	url = git@github.com:zerocore-ai-library/todolist-mcpb.git
-[submodule "packages/web-mcpb"]
-	path = packages/web-mcpb
+[submodule "core/web-mcpb"]
+	path = core/web-mcpb
 	url = git@github.com:zerocore-ai-library/web-mcpb.git
-[submodule "vendor/atlassian-mcpb"]
-	path = vendor/atlassian-mcpb
+[submodule "external/atlassian-mcpb"]
+	path = external/atlassian-mcpb
 	url = git@github.com:zerocore-ai-library/atlassian-mcpb.git
-[submodule "vendor/elastic-mcpb"]
-	path = vendor/elastic-mcpb
+[submodule "external/elastic-mcpb"]
+	path = external/elastic-mcpb
 	url = git@github.com:zerocore-ai-library/elastic-mcpb.git
-[submodule "vendor/linear-mcpb"]
-	path = vendor/linear-mcpb
+[submodule "external/linear-mcpb"]
+	path = external/linear-mcpb
 	url = git@github.com:zerocore-ai-library/linear-mcpb.git
-[submodule "vendor/monday-mcpb"]
-	path = vendor/monday-mcpb
+[submodule "external/monday-mcpb"]
+	path = external/monday-mcpb
 	url = git@github.com:zerocore-ai-library/monday-mcpb.git
-[submodule "vendor/mongodb-mcpb"]
-	path = vendor/mongodb-mcpb
+[submodule "external/mongodb-mcpb"]
+	path = external/mongodb-mcpb
 	url = git@github.com:zerocore-ai-library/mongodb-mcpb.git
-[submodule "vendor/github-mcpb"]
-	path = vendor/github-mcpb
+[submodule "external/github-mcpb"]
+	path = external/github-mcpb
 	url = git@github.com:zerocore-ai-library/github-mcpb.git
-[submodule "packages/opendata-mcpb"]
-	path = packages/opendata-mcpb
+[submodule "core/opendata-mcpb"]
+	path = core/opendata-mcpb
 	url = git@github.com:zerocore-ai-library/opendata-mcpb.git
