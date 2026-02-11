@@ -8,16 +8,16 @@ This repository contains MCP (Model Context Protocol) servers. Each server provi
 
 ## Core
 
-| Server        | Description                              | Tools                                                                                               |
-| ------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `bash`        | Shell command execution                  | `bash__exec`                                                                                        |
-| `elicitation` | User input via structured questions      | `elicitation__clarify`                                                                              |
-| `filesystem`  | File operations                          | `filesystem__read`, `filesystem__write`, `filesystem__edit`, `filesystem__glob`, `filesystem__grep` |
-| `plugins`     | Plugin registry search and resolution    | `plugins__search`, `plugins__resolve`                                                               |
-| `system`      | System utilities                         | `system__sleep`, `system__get_datetime`, `system__get_random_integer`                               |
-| `terminal`    | PTY-based terminal sessions              | `terminal__create`, `terminal__destroy`, `terminal__list`, `terminal__send`, `terminal__read`, `terminal__info` |
-| `todolist`    | Session-scoped task tracking             | `todolist__get`, `todolist__set`                                                                    |
-| `web`         | Web fetch and search                     | `web__fetch`, `web__search`                                                                         |
+| Server        | Description                              | Tools                                                                |
+| ------------- | ---------------------------------------- | -------------------------------------------------------------------- |
+| `bash`        | Shell command execution                  | `exec`                                                               |
+| `elicitation` | User input via structured questions      | `clarify`                                                            |
+| `filesystem`  | File operations                          | `read`, `write`, `edit`, `glob`, `grep`                              |
+| `plugins`     | Plugin registry search and resolution    | `search`, `resolve`                                                  |
+| `system`      | System utilities                         | `sleep`, `get_datetime`, `get_random_integer`                        |
+| `terminal`    | PTY-based terminal sessions              | `create`, `destroy`, `list`, `send`, `read`, `info`                  |
+| `todolist`    | Session-scoped task tracking             | `get`, `set`                                                         |
+| `web`         | Web fetch and search                     | `fetch`, `search`                                                    |
 
 ## External
 
@@ -46,7 +46,7 @@ Test with [tool-cli](https://github.com/zerocore-ai/tool-cli):
 
 ```sh
 tool info ./core/system
-tool call ./core/bash -m bash__exec -p command="echo hello"
+tool call ./core/bash -m exec -p command="echo hello"
 ```
 
 ## License
