@@ -43,3 +43,9 @@
 [submodule "core/opendata-mcpb"]
 	path = core/opendata-mcpb
 	url = git@github.com:zerocore-ai-library/opendata-mcpb.git
+[submodule "external/context7-mcpb"]
+	path = external/context7-mcpb
+	url = https://github.com/zerocore-ai-library/context7-mcpb.git
+[submodule "external/exa-mcpb"]
+	path = external/exa-mcpb
+	url = https://github.com/zerocore-ai-library/exa-mcpb.git
