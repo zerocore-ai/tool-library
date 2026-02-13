@@ -1,51 +1,57 @@
-[submodule "core/bash-mcpb"]
-	path = core/bash-mcpb
-	url = git@github.com:zerocore-ai-library/bash-mcpb.git
-[submodule "core/elicitation-mcpb"]
-	path = core/elicitation-mcpb
-	url = git@github.com:zerocore-ai-library/elicitation-mcpb.git
-[submodule "core/filesystem-mcpb"]
-	path = core/filesystem-mcpb
-	url = git@github.com:zerocore-ai-library/filesystem-mcpb.git
-[submodule "core/plugins-mcpb"]
-	path = core/plugins-mcpb
-	url = git@github.com:zerocore-ai-library/plugins-mcpb.git
-[submodule "core/system-mcpb"]
-	path = core/system-mcpb
-	url = git@github.com:zerocore-ai-library/system-mcpb.git
-[submodule "core/terminal-mcpb"]
-	path = core/terminal-mcpb
-	url = git@github.com:zerocore-ai-library/terminal-mcpb.git
-[submodule "core/todolist-mcpb"]
-	path = core/todolist-mcpb
-	url = git@github.com:zerocore-ai-library/todolist-mcpb.git
-[submodule "core/web-mcpb"]
-	path = core/web-mcpb
-	url = git@github.com:zerocore-ai-library/web-mcpb.git
-[submodule "external/atlassian-mcpb"]
-	path = external/atlassian-mcpb
-	url = git@github.com:zerocore-ai-library/atlassian-mcpb.git
-[submodule "external/elastic-mcpb"]
-	path = external/elastic-mcpb
-	url = git@github.com:zerocore-ai-library/elastic-mcpb.git
-[submodule "external/linear-mcpb"]
-	path = external/linear-mcpb
-	url = git@github.com:zerocore-ai-library/linear-mcpb.git
-[submodule "external/monday-mcpb"]
-	path = external/monday-mcpb
-	url = git@github.com:zerocore-ai-library/monday-mcpb.git
-[submodule "external/mongodb-mcpb"]
-	path = external/mongodb-mcpb
-	url = git@github.com:zerocore-ai-library/mongodb-mcpb.git
-[submodule "external/github-mcpb"]
-	path = external/github-mcpb
-	url = git@github.com:zerocore-ai-library/github-mcpb.git
-[submodule "core/opendata-mcpb"]
-	path = core/opendata-mcpb
-	url = git@github.com:zerocore-ai-library/opendata-mcpb.git
-[submodule "external/context7-mcpb"]
-	path = external/context7-mcpb
-	url = https://github.com/zerocore-ai-library/context7-mcpb.git
-[submodule "external/exa-mcpb"]
-	path = external/exa-mcpb
-	url = https://github.com/zerocore-ai-library/exa-mcpb.git
+[submodule "core/bash"]
+	path = core/bash
+	url = git@github.com:zerocore-ai-library/bash.git
+[submodule "core/elicitation"]
+	path = core/elicitation
+	url = git@github.com:zerocore-ai-library/elicitation.git
+[submodule "core/filesystem"]
+	path = core/filesystem
+	url = git@github.com:zerocore-ai-library/filesystem.git
+[submodule "core/plugins"]
+	path = core/plugins
+	url = git@github.com:zerocore-ai-library/plugins.git
+[submodule "core/system"]
+	path = core/system
+	url = git@github.com:zerocore-ai-library/system.git
+[submodule "core/terminal"]
+	path = core/terminal
+	url = git@github.com:zerocore-ai-library/terminal.git
+[submodule "core/todolist"]
+	path = core/todolist
+	url = git@github.com:zerocore-ai-library/todolist.git
+[submodule "core/web"]
+	path = core/web
+	url = git@github.com:zerocore-ai-library/web.git
+[submodule "external/atlassian"]
+	path = external/atlassian
+	url = git@github.com:zerocore-ai-library/atlassian.git
+[submodule "external/elastic"]
+	path = external/elastic
+	url = git@github.com:zerocore-ai-library/elastic.git
+[submodule "external/linear"]
+	path = external/linear
+	url = git@github.com:zerocore-ai-library/linear.git
+[submodule "external/monday"]
+	path = external/monday
+	url = git@github.com:zerocore-ai-library/monday.git
+[submodule "external/mongodb"]
+	path = external/mongodb
+	url = git@github.com:zerocore-ai-library/mongodb.git
+[submodule "external/github"]
+	path = external/github
+	url = git@github.com:zerocore-ai-library/github.git
+[submodule "core/opendata"]
+	path = core/opendata
+	url = git@github.com:zerocore-ai-library/opendata.git
+[submodule "external/context7"]
+	path = external/context7
+	url = https://github.com/zerocore-ai-library/context7.git
+[submodule "external/exa"]
+	path = external/exa
+	url = https://github.com/zerocore-ai-library/exa.git
+[submodule "external/notion"]
+	path = external/notion
+	url = https://github.com/zerocore-ai-library/notion.git
+[submodule "external/playwright"]
+	path = external/playwright
+	url = https://github.com/zerocore-ai-library/playwright.git

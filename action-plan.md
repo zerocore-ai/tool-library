@@ -310,5 +310,5 @@ Create a test workflow in the repo that:
 - tool-cli publish command: supports `--multi-platform` with `--darwin-arm64`, `--darwin-x64`, `--linux-arm64`, `--linux-x64`, `--win32-arm64`, `--win32-x64` flags
 - MCPB spec: https://github.com/anthropics/mcpb
 - Existing vendor workflows for reference:
-  - `vendor/mongodb-mcpb/.github/workflows/release.yml`
-  - `vendor/monday-mcpb/.github/workflows/release.yml`
+  - `external/mongodb/.github/workflows/release.yml`
+  - `external/monday/.github/workflows/release.yml`
