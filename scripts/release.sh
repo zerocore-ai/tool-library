@@ -10,10 +10,10 @@ set -euo pipefail
 #   ./scripts/release.sh <paths...> --pull --publish [--version <tag>]
 #
 # Examples:
-#   ./scripts/release.sh external/github-mcpb --pull --publish
-#   ./scripts/release.sh core/bash-mcpb --pull --version v0.1.0
+#   ./scripts/release.sh external/github --pull --publish
+#   ./scripts/release.sh core/bash --pull --version v0.1.0
 #   ./scripts/release.sh core/* --pull --publish
-#   ./scripts/release.sh external/*-mcpb core/web-mcpb --publish
+#   ./scripts/release.sh external/* core/web --publish
 #
 # Options:
 #   --pull              Download release artifacts from GitHub
@@ -48,7 +48,7 @@ ${BOLD}USAGE${NC}
 
 ${BOLD}ARGUMENTS${NC}
     <paths...>          One or more paths to mcpb submodules
-                        Supports glob patterns: core/* external/*-mcpb
+                        Supports glob patterns: core/* external/*
 
 ${BOLD}OPTIONS${NC}
     --pull              Download release artifacts from GitHub Releases
@@ -59,13 +59,13 @@ ${BOLD}OPTIONS${NC}
 
 ${BOLD}EXAMPLES${NC}
     ${DIM}# Pull latest release for a single package${NC}
-    ./scripts/release.sh external/github-mcpb --pull
+    ./scripts/release.sh external/github --pull
 
     ${DIM}# Pull and publish all external packages${NC}
     ./scripts/release.sh external/* --pull --publish
 
     ${DIM}# Pull specific version${NC}
-    ./scripts/release.sh core/bash-mcpb --pull --version v0.2.0
+    ./scripts/release.sh core/bash --pull --version v0.2.0
 
     ${DIM}# Dry run to see what would happen${NC}
     ./scripts/release.sh core/* external/* --pull --publish --dry-run

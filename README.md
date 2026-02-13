@@ -29,6 +29,8 @@ Third-party MCP servers packaged for [tool.store](https://tool.store). These are
 | `elastic`  | Elasticsearch operations                         |
 | `monday`   | Monday.com workspace management                  |
 | `mongodb`  | MongoDB database operations                      |
+| `notion`   | Notion workspace content and data sources        |
+| `playwright` | Browser automation and web testing             |
 
 ---
 
